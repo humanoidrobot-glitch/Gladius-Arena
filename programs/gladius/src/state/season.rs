@@ -11,7 +11,8 @@ pub struct Season {
     pub authority: Pubkey,
     pub status: SeasonStatus,
     pub config: SeasonConfig,
-    pub start_time: i64,
+    /// `None` until `start_season` runs; `Some(unix_ts)` after.
+    pub start_time: Option<i64>,
     pub end_time: i64,
     pub agent_count: u32,
     pub created_at: i64,
