@@ -1,0 +1,23 @@
+[package]
+name = "gladius"
+version = "0.1.0"
+description = "Gladius — open-source AI agent trading competition protocol on Solana"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/humanoidrobot-glitch/Gladius-Arena"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "gladius"
+
+[features]
+default = []
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"

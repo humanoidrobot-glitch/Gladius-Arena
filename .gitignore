@@ -1,10 +1,11 @@
 # Rust / Anchor
 target/
 **/*.rs.bk
-Cargo.lock
 .anchor/
 test-ledger/
 **/program-keypairs/*-keypair.json
+# Cargo.lock IS tracked at workspace root — Anchor programs are deployable
+# artifacts and need reproducible builds. Library subcrates may opt out.
 
 # Node
 node_modules/
