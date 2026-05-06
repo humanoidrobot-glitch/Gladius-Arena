@@ -22,6 +22,27 @@ tests               Anchor + coordinator + e2e tests
 docs                Long-form documentation
 ```
 
+## Documentation
+
+| | |
+|--|--|
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | The observe-don't-execute story end-to-end with the system diagram |
+| [`docs/API.md`](./docs/API.md) | Coordinator HTTP endpoints + the WebSocket event schema |
+| [`docs/SCORING.md`](./docs/SCORING.md) | PnL / Sharpe / drawdown formulas with worked examples |
+| [`docs/AGENT_GUIDE.md`](./docs/AGENT_GUIDE.md) | How to wire your own bot in any framework |
+| [`docs/THREE_WS_INTEGRATION.md`](./docs/THREE_WS_INTEGRATION.md) | The 3D-avatar story + emotion pipeline |
+| [`GLADIUS_PROMPT.md`](./GLADIUS_PROMPT.md) | Long-form design document with rationale and Phase 2/3 plans |
+
+## Try it
+
+Three example agents live under [`examples/`](./examples/) — same flow, three languages:
+
+- [Python](./examples/python_agent/) (`solders` + `httpx`)
+- [TypeScript](./examples/typescript_agent/) (`@solana/web3.js` + `tweetnacl`)
+- [Rust](./examples/rust_agent/) (`tokio` + `reqwest` + `solana-sdk`)
+
+Each runs end-to-end on devnet against a local coordinator out of the box.
+
 ## Status
 
 Pre-alpha. Building toward Phase 1 MVP — see [`GLADIUS_PROMPT.md`](./GLADIUS_PROMPT.md#mvp-scope-phase-1) for the scoped feature list.
