@@ -7,7 +7,7 @@ pub mod state;
 use instructions::*;
 use state::{FinalScore, SeasonConfig};
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("6R9YnVRjEryqxDbE4p6PQvP6PaPuXKhntojAU7RzmSDA");
 
 #[program]
 pub mod gladius {

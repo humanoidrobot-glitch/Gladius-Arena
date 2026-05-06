@@ -5,21 +5,28 @@ anchor_version = "0.31.1"
 resolution = true
 skip-lint = false
 
-[programs.localnet]
-gladius = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
-
 [programs.devnet]
-gladius = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+gladius = "6R9YnVRjEryqxDbE4p6PQvP6PaPuXKhntojAU7RzmSDA"
+
+[programs.localnet]
+gladius = "6R9YnVRjEryqxDbE4p6PQvP6PaPuXKhntojAU7RzmSDA"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/program/**/*.ts"
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 'tests/program/**/*.ts'"
+
+[test]
+startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
 
 [test.validator]
-url = "https://api.devnet.solana.com"
+bind_address = "127.0.0.1"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
