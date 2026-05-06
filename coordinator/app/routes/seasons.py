@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_admin
+from app.auth.dependencies import get_current_wallet, require_admin
 from app.db.session import get_session
-from app.models.season import Season
+from app.models import Agent, Season, SeasonEntry, SeasonStatus
+from app.schemas.agent import SeasonEntryResponse
 from app.schemas.season import SeasonCreate, SeasonResponse
 
 router = APIRouter(prefix="/api/v1/seasons", tags=["seasons"])
@@ -60,3 +62,53 @@ async def create_season(
     await session.commit()
     await session.refresh(season)
     return season
+
+
+@router.post(
+    "/{season_id}/join",
+    response_model=SeasonEntryResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def join_season(
+    season_id: int,
+    wallet: str = Depends(get_current_wallet),
+    session: AsyncSession = Depends(get_session),
+) -> SeasonEntry:
+    season_row = await session.execute(
+        select(Season).where(Season.season_id_onchain == season_id)
+    )
+    season = season_row.scalar_one_or_none()
+    if season is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="season not found")
+    if season.status not in {SeasonStatus.PENDING, SeasonStatus.ACTIVE}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="season is not accepting new entries",
+        )
+    if season.agent_count >= season.max_agents:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="season has reached its participant cap",
+        )
+
+    agent_row = await session.execute(select(Agent).where(Agent.wallet_pubkey == wallet))
+    agent = agent_row.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="agent must be registered before joining a season",
+        )
+
+    entry = SeasonEntry(season_id=season.id, agent_id=agent.id)
+    session.add(entry)
+    season.agent_count = season.agent_count + 1
+    try:
+        await session.commit()
+    except IntegrityError as exc:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="agent has already joined this season",
+        ) from exc
+    await session.refresh(entry)
+    return entry
