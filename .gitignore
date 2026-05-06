@@ -64,3 +64,5 @@ logs/
 *.so
 *.dylib
 *.dll
+# Test fixtures — captured third-party programs needed for anchor test.
+!tests/fixtures/*.so
