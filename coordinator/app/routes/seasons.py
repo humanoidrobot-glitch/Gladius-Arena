@@ -9,6 +9,7 @@ from app.models import Agent, Score, Season, SeasonEntry, SeasonStatus
 from app.schemas.agent import SeasonEntryResponse
 from app.schemas.leaderboard import LeaderboardEntry, LeaderboardResponse
 from app.schemas.season import SeasonCreate, SeasonResponse
+from app.services.settlement import SeasonSettlementError, settle_season as do_settle
 
 router = APIRouter(prefix="/api/v1/seasons", tags=["seasons"])
 
@@ -148,5 +149,48 @@ async def get_leaderboard(
             balance_usdc=score.balance_usdc,
         )
         for score, agent in rows.all()
+    ]
+    return LeaderboardResponse(season_id=season.season_id_onchain, entries=entries)
+
+
+@router.post("/{season_id}/settle", response_model=LeaderboardResponse)
+async def settle_season_route(
+    season_id: int,
+    _admin: str = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+) -> LeaderboardResponse:
+    season_row = await session.execute(
+        select(Season).where(Season.season_id_onchain == season_id)
+    )
+    season = season_row.scalar_one_or_none()
+    if season is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="season not found")
+
+    try:
+        ranked = await do_settle(session, season=season)
+    except SeasonSettlementError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from exc
+
+    agents_row = await session.execute(
+        select(Agent).where(Agent.id.in_([s.agent_id for s in ranked]))
+    )
+    agents_by_id = {a.id: a for a in agents_row.scalars()}
+    entries = [
+        LeaderboardEntry(
+            rank=s.rank,
+            agent_id=s.agent_id,
+            wallet_pubkey=agents_by_id[s.agent_id].wallet_pubkey,
+            name=agents_by_id[s.agent_id].name,
+            pnl_bps=s.pnl_bps,
+            sharpe_x1000=s.sharpe_x1000,
+            max_drawdown_bps=s.max_drawdown_bps,
+            trade_count=s.trade_count,
+            sample_count=s.sample_count,
+            starting_balance_usdc=s.starting_balance_usdc,
+            balance_usdc=s.balance_usdc,
+        )
+        for s in ranked
     ]
     return LeaderboardResponse(season_id=season.season_id_onchain, entries=entries)
