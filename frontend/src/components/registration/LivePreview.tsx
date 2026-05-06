@@ -1,4 +1,5 @@
 import { type AvatarOption } from "../../lib/avatars";
+import { AgentAvatar3D } from "../AgentAvatar3D";
 import { AvatarThumb } from "../AvatarThumb";
 
 interface LivePreviewProps {
@@ -37,9 +38,9 @@ export function LivePreview({
         </div>
         <p className="readout absolute bottom-2 right-3 text-[9px] uppercase tracking-wider text-stone-300">
           {threeWsAgentId
-            ? "<agent-3d> · sprint 5"
+            ? "agent-3d · three.ws"
             : selectedAvatar
-              ? "crest · placeholder"
+              ? "forged crest"
               : "pending"}
         </p>
       </div>
@@ -162,16 +163,25 @@ function EmptyStage() {
 }
 
 function ThreeWsAgentPreview({ agentId }: { agentId: string }) {
-  // Placeholder for the actual <agent-3d agent-id={agentId}> embed —
-  // wired in Sprint 5 once the three.ws script is loaded.
   return (
-    <div className="flex h-48 w-40 flex-col items-center justify-center gap-2 border border-gold-600/40 bg-night-700">
-      <span className="font-display text-[10px] uppercase tracking-carved text-gold-300">
-        agent-3d
-      </span>
-      <span className="readout text-[10px] text-stone-300">
-        {agentId.slice(0, 14)}{agentId.length > 14 ? "…" : ""}
-      </span>
-    </div>
+    <AgentAvatar3D
+      agentId={agentId}
+      style={{ width: 192, height: 224, display: "block" }}
+      fallback={
+        <div className="flex h-56 w-44 flex-col items-center justify-center gap-2 border border-gold-600/40 bg-night-700/60">
+          <span className="font-display text-[10px] uppercase tracking-carved text-gold-300">
+            agent-3d
+          </span>
+          <span className="readout text-[10px] text-stone-300">
+            {agentId.slice(0, 14)}
+            {agentId.length > 14 ? "…" : ""}
+          </span>
+          <span className="font-body text-[11px] italic text-stone-300">
+            three.ws script loading…
+          </span>
+        </div>
+      }
+      ariaLabel="three.ws preview"
+    />
   );
 }

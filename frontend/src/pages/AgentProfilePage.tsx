@@ -5,16 +5,22 @@ import { AttestationCard } from "../components/profile/AttestationCard";
 import { PnLChart } from "../components/profile/PnLChart";
 import { ProfileStage } from "../components/profile/ProfileStage";
 import { SeasonHistory } from "../components/profile/SeasonHistory";
-import { getMockProfile } from "../lib/mockData";
+import { useEmotionForAgent } from "../hooks/useEmotionForAgent";
+import { useGladiusWebSocket } from "../hooks/useGladiusWebSocket";
+import { getMockProfile, getMockSeason } from "../lib/mockData";
 
 export function AgentProfilePage() {
   const { id } = useParams<{ id: string }>();
   const agentId = id ? Number(id) : 1;
+  const season = useMemo(() => getMockSeason(), []);
 
   const profile = useMemo(
     () => getMockProfile(Number.isFinite(agentId) ? agentId : 1),
     [agentId],
   );
+
+  const { events } = useGladiusWebSocket({ seasonId: season.seasonId });
+  const emotion = useEmotionForAgent(events, profile.agent.id);
 
   return (
     <section className="relative mx-auto max-w-7xl px-8 pb-24 pt-12">
@@ -24,6 +30,7 @@ export function AgentProfilePage() {
         <ProfileStage
           seed={profile.agent.avatarSeed}
           threeWsAgentId={profile.agent.threeWsAgentId}
+          emotion={emotion}
         />
 
         <div className="flex flex-col justify-center gap-4">

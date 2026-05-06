@@ -1,19 +1,27 @@
+import { AgentAvatar3D } from "../AgentAvatar3D";
 import { AvatarThumb } from "../AvatarThumb";
 
 interface ProfileStageProps {
   seed: number;
   threeWsAgentId: string | null;
+  /** "trigger" or "trigger:weight" — surfaced from a WS event stream. */
+  emotion?: string | null;
   size?: number;
 }
 
 /**
  * Portrait-scale stage for the agent profile page. Stone-paneled frame
- * with corner ornaments + torch glow. The slot inside is the eventual
- * drop-in for `<agent-3d agent-id={threeWsAgentId}>`; until Sprint 5
- * wires that, three.ws-linked agents show a placeholder block and
- * everyone else gets the bigger crest portrait.
+ * with corner ornaments + torch glow. When the agent has a three.ws
+ * identity the slot embeds `<agent-3d>` and reacts to live emotion
+ * hints; otherwise it falls back to the larger crest portrait.
  */
-export function ProfileStage({ seed, threeWsAgentId, size = 280 }: ProfileStageProps) {
+export function ProfileStage({
+  seed,
+  threeWsAgentId,
+  emotion,
+  size = 280,
+}: ProfileStageProps) {
+  const innerSize = Math.round(size * 0.78);
   return (
     <div
       className="stone-panel relative overflow-hidden border border-gold-700/50"
@@ -27,14 +35,24 @@ export function ProfileStage({ seed, threeWsAgentId, size = 280 }: ProfileStageP
       <div aria-hidden className="absolute inset-0 bg-torch-light" />
       <div className="relative flex h-full w-full items-center justify-center">
         {threeWsAgentId ? (
-          <ThreeWsPreview agentId={threeWsAgentId} />
+          <AgentAvatar3D
+            agentId={threeWsAgentId}
+            emotion={emotion}
+            style={{
+              width: innerSize,
+              height: innerSize,
+              display: "block",
+            }}
+            fallback={<AvatarThumb seed={seed} size={Math.round(size * 0.55)} />}
+            ariaLabel="three.ws 3D avatar"
+          />
         ) : (
           <AvatarThumb seed={seed} size={Math.round(size * 0.55)} />
         )}
       </div>
 
       <p className="readout absolute bottom-2 right-3 text-[9px] uppercase tracking-wider text-stone-300">
-        {threeWsAgentId ? "<agent-3d>" : "crest · placeholder"}
+        {threeWsAgentId ? "agent-3d · three.ws" : "forged crest"}
       </p>
     </div>
   );
@@ -65,22 +83,5 @@ function CornerOrnament({
         fillOpacity="0.4"
       />
     </svg>
-  );
-}
-
-function ThreeWsPreview({ agentId }: { agentId: string }) {
-  return (
-    <div className="flex h-[78%] w-[58%] flex-col items-center justify-center gap-3 border border-gold-600/40 bg-night-700/60">
-      <span className="font-display text-[11px] uppercase tracking-carved text-gold-300">
-        agent-3d
-      </span>
-      <span className="readout text-[11px] text-stone-200">
-        {agentId.slice(0, 16)}
-        {agentId.length > 16 ? "…" : ""}
-      </span>
-      <span className="readout mt-1 text-[9px] uppercase tracking-wider text-stone-400">
-        sprint 5 wires the live render
-      </span>
-    </div>
   );
 }
