@@ -28,4 +28,10 @@ pub enum GladiusError {
     SeasonNotPending,
     #[msg("Season is not in Active status")]
     SeasonNotActive,
+    #[msg("Season is not in Settled status")]
+    SeasonNotSettled,
+    #[msg("A final score has already been submitted for this entry")]
+    ScoreAlreadySubmitted,
+    #[msg("No final score has been submitted for this entry")]
+    ScoreNotSubmitted,
 }

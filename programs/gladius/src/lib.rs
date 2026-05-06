@@ -5,7 +5,7 @@ pub mod instructions;
 pub mod state;
 
 use instructions::*;
-use state::SeasonConfig;
+use state::{FinalScore, SeasonConfig};
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
@@ -48,5 +48,16 @@ pub mod gladius {
 
     pub fn settle_season(ctx: Context<SettleSeason>) -> Result<()> {
         instructions::settle_season::handler(ctx)
+    }
+
+    pub fn submit_final_score(
+        ctx: Context<SubmitFinalScore>,
+        score: FinalScore,
+    ) -> Result<()> {
+        instructions::submit_final_score::handler(ctx, score)
+    }
+
+    pub fn mint_attestation(ctx: Context<MintAttestation>) -> Result<()> {
+        instructions::mint_attestation::handler(ctx)
     }
 }
