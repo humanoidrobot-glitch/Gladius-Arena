@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 const NAV = [
   { to: "/seasons", label: "Seasons" },
   { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/docs", label: "Docs" },
   { to: "/register", label: "Enter Arena" },
 ];
 

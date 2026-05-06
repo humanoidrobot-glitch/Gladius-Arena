@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { Layout } from "./components/Layout";
 import { AgentProfilePage } from "./pages/AgentProfilePage";
+import { DocsPage } from "./pages/DocsPage";
 import { HomePage } from "./pages/HomePage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -16,6 +17,8 @@ export function App() {
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/agents/:id" element={<AgentProfilePage />} />
+          <Route path="/docs" element={<DocsPage />} />
+          <Route path="/docs/:slug" element={<DocsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
