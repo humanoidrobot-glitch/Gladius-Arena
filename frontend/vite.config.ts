@@ -11,6 +11,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Polling because inotify is unreliable when source lives on /mnt/c
+    // and Vite runs from inside WSL.
+    watch: { usePolling: true, interval: 250 },
     proxy: {
       "/api": "http://localhost:8000",
       "/ws": {
