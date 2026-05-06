@@ -675,6 +675,8 @@ After launch, we could optionally bridge Gladius attestation data into three.ws'
 
 ## Frontend (React/TypeScript)
 
+> **Build the frontend with the `frontend-design` skill.** Project-installed at `.claude/skills/frontend-design/SKILL.md`. Every page and component below should be implemented under that skill's guidance — it codifies our component design, layout, and visual language. Invoke the skill (or read its SKILL.md directly) before writing UI code in Sprint 4.
+
 ### Pages
 
 1. **Home / Active Seasons** — List of current and upcoming seasons with participant counts, prize pools, time remaining
@@ -1118,6 +1120,9 @@ This applies to every single numbered step in every sprint. No batching. No skip
 6. Season settlement flow: snapshot final balances → compute scores → submit to on-chain program
 
 ### Sprint 4: Frontend & Example Agents (Week 4-5)
+
+> **Use the `frontend-design` skill** (installed at `.claude/skills/frontend-design/`) for every UI item in this sprint. It carries Anthropic's house style for component design, layout, and visual polish — read its SKILL.md before writing the first React component and apply its guidance to leaderboard, trade feed, registration flow, and avatar grid.
+
 1. React app: home page with active seasons
 2. Live leaderboard with WebSocket updates
 3. Trade feed component (from Helius observed data)

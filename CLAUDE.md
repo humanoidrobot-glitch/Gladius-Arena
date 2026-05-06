@@ -74,3 +74,6 @@ If a feature touches multiple files but is one logical unit, that's still one co
 
 ## Build environment
 Solana/Anchor builds are unreliable on bare Windows. Use WSL Ubuntu for `anchor build` / `anchor test` / `solana` CLI work. Coordinator (Python) and frontend (Node) work fine on Windows native or WSL.
+
+## Project skills
+- `.claude/skills/frontend-design/` — house style for React/TypeScript UI work. Read its SKILL.md before writing frontend code (Sprint 4 and any later UI work). It governs component design, layout, and visual polish.
