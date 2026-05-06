@@ -26,7 +26,7 @@ export function AgentRow({ row, recentTradeFlash }: AgentRowProps) {
     <article
       className={`stone-panel relative grid items-center gap-6 border px-6 py-5 transition-colors duration-300 ${frameClass} ${flashClass}`}
       style={{
-        gridTemplateColumns: "auto auto 1fr auto auto",
+        gridTemplateColumns: "auto auto minmax(0, 1fr) auto auto auto",
       }}
     >
       <RankBadge rank={row.rank} />
