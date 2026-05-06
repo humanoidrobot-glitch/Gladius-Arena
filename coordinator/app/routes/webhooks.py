@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.helius_auth import verify_helius_auth
 from app.db.session import get_session
 from app.models import Agent, ObservedTrade, Season, SeasonEntry, SeasonStatus
+from app.schemas.events import GladiusEvent
 from app.schemas.webhook import HeliusEnhancedTx
+from app.services.event_broadcaster import broadcaster
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -106,5 +108,25 @@ async def helius_webhook(
             except IntegrityError:
                 await session.rollback()
                 skipped += 1
+                continue
+
+            await broadcaster.publish(
+                GladiusEvent(
+                    type="swap_detected",
+                    season_id=season.season_id_onchain,
+                    timestamp=tx.timestamp,
+                    agent_id=agent.id,
+                    wallet_pubkey=agent.wallet_pubkey,
+                    three_ws_agent_id=agent.three_ws_agent_id,
+                    data={
+                        "tx_signature": tx.signature,
+                        "token_in": out_mint,
+                        "token_out": in_mint,
+                        "amount_in_raw": str(out_amount),
+                        "amount_out_raw": str(in_amount),
+                        "in_universe": _is_in_universe(season, out_mint, in_mint),
+                    },
+                )
+            )
 
     return {"persisted": persisted, "skipped": skipped}
