@@ -2,6 +2,7 @@ interface AvatarThumbProps {
   seed: number;
   size?: number;
   rank?: number;
+  threeWsLinked?: boolean;
 }
 
 const PALETTES: Array<{ ring: string; fill: string; mark: string }> = [
@@ -13,34 +14,70 @@ const PALETTES: Array<{ ring: string; fill: string; mark: string }> = [
 
 /**
  * Deterministic gladiator portrait placeholder — circular gold-rimmed
- * disc with a stylized helm/crest mark inside. Real `<agent-3d>` /
- * GLB thumbnails replace this in Sprint 5.
+ * disc with a stylized helm/crest. When `threeWsLinked` is set, a small
+ * gold corner pip indicates the agent has a real three.ws identity that
+ * the agent profile page renders as a full <agent-3d> viewer. The full
+ * three.ws integration lands in Sprint 5.
  */
-export function AvatarThumb({ seed, size = 56, rank }: AvatarThumbProps) {
+export function AvatarThumb({
+  seed,
+  size = 56,
+  rank,
+  threeWsLinked,
+}: AvatarThumbProps) {
   const palette = PALETTES[seed % PALETTES.length];
   const isChampion = rank === 1;
   const ringWidth = isChampion ? 2 : 1;
 
   return (
     <div
-      className="relative shrink-0 overflow-hidden rounded-full"
-      style={{
-        width: size,
-        height: size,
-        backgroundColor: palette.fill,
-        boxShadow: isChampion
-          ? "0 0 0 1px rgba(201,168,76,0.55), 0 0 22px -4px rgba(201,168,76,0.45)"
-          : "inset 0 1px 0 0 rgba(201,168,76,0.18), 0 4px 12px -8px rgba(0,0,0,0.9)",
-        border: `${ringWidth}px solid ${palette.ring}`,
-      }}
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
     >
-      <CrestMark seed={seed} color={palette.mark} />
+      <div
+        className="relative h-full w-full overflow-hidden rounded-full"
+        style={{
+          backgroundColor: palette.fill,
+          boxShadow: isChampion
+            ? "0 0 0 1px rgba(201,168,76,0.55), 0 0 22px -4px rgba(201,168,76,0.45)"
+            : "inset 0 1px 0 0 rgba(201,168,76,0.18), 0 4px 12px -8px rgba(0,0,0,0.9)",
+          border: `${ringWidth}px solid ${palette.ring}`,
+        }}
+      >
+        <CrestMark seed={seed} color={palette.mark} />
+      </div>
+      {threeWsLinked && <ThreeWsPip />}
     </div>
   );
 }
 
+function ThreeWsPip() {
+  // Small gold pip in the bottom-right of the avatar. Says "this agent
+  // has a three.ws identity — the full 3D viewer renders on the profile
+  // page" without needing to load <agent-3d> at thumbnail scale.
+  return (
+    <span
+      className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-night-800"
+      style={{
+        border: "1px solid rgba(201, 168, 76, 0.85)",
+        boxShadow: "0 0 6px rgba(201, 168, 76, 0.55)",
+      }}
+      title="three.ws avatar linked"
+      aria-label="three.ws avatar linked"
+    >
+      <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 text-gold-300" aria-hidden>
+        {/* Three triangular peaks — a tiny stylized "3" / mountains motif */}
+        <path
+          d="M2 9 L4 5 L6 9 Z M5 9 L7 4 L9 9 Z"
+          fill="currentColor"
+          fillOpacity="0.95"
+        />
+      </svg>
+    </span>
+  );
+}
+
 function CrestMark({ seed, color }: { seed: number; color: string }) {
-  // Pick one of four stylized helm crests deterministically.
   const variant = seed % 4;
   const common = {
     fill: color,
@@ -55,7 +92,6 @@ function CrestMark({ seed, color }: { seed: number; color: string }) {
       aria-hidden
     >
       {variant === 0 && (
-        // Centurion plume
         <>
           <path
             d="M16 5 L16 22 M11 22 L21 22"
@@ -68,7 +104,6 @@ function CrestMark({ seed, color }: { seed: number; color: string }) {
         </>
       )}
       {variant === 1 && (
-        // Crossed gladii
         <>
           <path
             d="M9 9 L23 23 M23 9 L9 23"
@@ -81,7 +116,6 @@ function CrestMark({ seed, color }: { seed: number; color: string }) {
         </>
       )}
       {variant === 2 && (
-        // Laurel wreath
         <>
           <path
             d="M8 18 Q11 8 16 6 Q21 8 24 18"
@@ -94,12 +128,8 @@ function CrestMark({ seed, color }: { seed: number; color: string }) {
         </>
       )}
       {variant === 3 && (
-        // Single sword
         <>
-          <path
-            d="M16 6 L17 22 L16 25 L15 22 Z"
-            {...common}
-          />
+          <path d="M16 6 L17 22 L16 25 L15 22 Z" {...common} />
           <path
             d="M11 22 L21 22"
             stroke={color}

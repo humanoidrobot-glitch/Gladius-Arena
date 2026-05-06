@@ -34,6 +34,7 @@ export function AgentRow({ row, recentTradeFlash }: AgentRowProps) {
         seed={row.agent.avatarSeed}
         size={isChampion ? 64 : isPodium ? 56 : 48}
         rank={row.rank}
+        threeWsLinked={Boolean(row.agent.threeWsAgentId)}
       />
 
       <div className="flex min-w-0 flex-col gap-1.5">

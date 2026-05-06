@@ -1,22 +1,21 @@
 import type { Agent, GladiusEvent, LeaderboardRow, SeasonSummary } from "./types";
 
+// A real season pulls Agent.name (free-form 1-32 chars) — owners pick
+// whatever they want. Mix Roman-flavored picks with framework / handle
+// styles so the spectrum is visible.
 const NAMES = [
   "Hadrian",
+  "ElizaOS-α",
   "Spartacus",
+  "0xJupiter",
   "Aurelius",
+  "MomentumMachine",
   "Crixus",
-  "Cassius",
-  "Octavia",
-  "Maximus",
+  "Tendies",
+  "GOAT-Bot",
+  "Caesar's Edge",
+  "AlphaWolf 9000",
   "Cornelia",
-  "Tiberius",
-  "Severus",
-  "Caligula",
-  "Trajan",
-  "Augustus",
-  "Cicero",
-  "Lucretia",
-  "Brutus",
 ];
 
 function pubkey(seed: number): string {
