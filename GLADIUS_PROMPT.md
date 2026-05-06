@@ -1123,7 +1123,40 @@ This applies to every single numbered step in every sprint. No batching. No skip
 
 > **Use the `frontend-design` skill** (installed at `.claude/skills/frontend-design/`) for every UI item in this sprint. It carries Anthropic's house style for component design, layout, and visual polish — read its SKILL.md before writing the first React component and apply its guidance to leaderboard, trade feed, registration flow, and avatar grid.
 
-1. React app: home page with active seasons
+#### Build brief — the prompt to follow
+
+Build the Gladius frontend — a Solana AI agent trading arena. Think World of Warcraft arena meets Bloomberg terminal meets ancient Rome.
+
+Use the `/frontend-design` skill. The aesthetic direction is: dark, cinematic, gladiatorial. Not generic crypto dashboards. Not soft gradients and rounded corners. This should feel like entering a colosseum at night — stone, gold accents, dramatic lighting, tension.
+
+**Design tokens:**
+
+- Background: near-black with subtle warm undertones (not pure `#000`)
+- Primary accent: imperial gold (`#C9A84C` or similar — weathered, not shiny)
+- Secondary accent: blood red for losses / danger states, muted emerald for gains
+- Text: off-white primary, stone gray secondary
+- Typography: a bold, chiseled display font for headings (think Cinzel, Trajan, or similar Roman-inspired serif), paired with a clean monospace for numbers/data (JetBrains Mono or similar)
+- Borders and dividers: subtle stone texture or thin gold rules, never generic gray lines
+- Cards/panels: dark stone-like surfaces with very subtle noise texture, not flat color blocks
+- Shadows: warm, not cool — subtle golden glow on active elements
+
+**Specific pages to build:**
+
+1. **Landing page / Hero** — "Where AI agents prove their edge." A dramatic hero with a 3D avatar placeholder area (will embed `<agent-3d>` components later), animated gold particle effects or subtle ember/flame particles, a live season countdown timer, and a CTA to register your agent. Should feel like walking into the arena.
+
+2. **Season Leaderboard** — The main event. A ranked table of agents showing: rank, avatar thumbnail (placeholder for now), agent name, PnL%, Sharpe ratio, max drawdown, trade count. Rows should feel like gladiator cards — each one distinct. The #1 agent gets a gold crown/laurel treatment. Top 3 get special visual treatment. PnL numbers should be large and prominent. Include a live trade feed sidebar showing recent swaps across all agents in real-time. Use WebSocket-ready component structure (`useGladiusWebSocket` hook placeholder).
+
+3. **Agent Registration** — Connect wallet → name your agent → pick avatar from a gallery grid (6–8 placeholder thumbnails with a "selected" gold border state) → join season. Single page flow. The avatar picker should show a live 3D preview area (placeholder div for `<agent-3d>` component). Make it feel like you're forging your gladiator before entering the arena.
+
+4. **Agent Profile** — Individual agent page showing: large 3D avatar area, season history table, PnL chart over time (placeholder for Recharts), attestation NFT cards (gold-bordered achievement cards showing season results like "Season 1 — Rank #3 — +23.5% PnL — Sharpe 1.87"). These should look like trophies/medals.
+
+**Stack:** React + TypeScript + Tailwind. Use Recharts for chart placeholders. Components should be modular — `Leaderboard`, `TradeFeed`, `AgentCard`, `AttestationCard`, `AvatarPicker` as separate components. All data can be mock/hardcoded for now — the important thing is the visual design and component structure.
+
+Remember: every crypto unc who played WoW arena will see this leaderboard and immediately understand what Gladius is. The Gladius WoW addon showed enemy arena frames with health bars and cooldowns. Our leaderboard shows agent frames with PnL bars and trade stats. Make that parallel feel intentional.
+
+#### Sprint 4 deliverables
+
+1. React app: home page with active seasons (the hero / landing page above)
 2. Live leaderboard with WebSocket updates
 3. Trade feed component (from Helius observed data)
 4. Agent registration page (connect wallet flow)
