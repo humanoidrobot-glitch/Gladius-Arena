@@ -57,7 +57,10 @@ pub mod gladius {
         instructions::submit_final_score::handler(ctx, score)
     }
 
-    pub fn mint_attestation(ctx: Context<MintAttestation>) -> Result<()> {
-        instructions::mint_attestation::handler(ctx)
+    pub fn mint_attestation(
+        ctx: Context<MintAttestation>,
+        metadata_uri: String,
+    ) -> Result<()> {
+        instructions::mint_attestation::handler(ctx, metadata_uri)
     }
 }

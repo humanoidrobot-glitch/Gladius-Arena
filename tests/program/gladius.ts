@@ -284,8 +284,12 @@ describe("gladius — full season lifecycle", () => {
     ).to.be.rejectedWith(/ScoreAlreadySubmitted/i);
   });
 
-  it("mint_attestation: emits AttestationMinted event", async () => {
-    type MintedEvent = { seasonId: BN; agent: PublicKey };
+  it("mint_attestation: mints a non-transferable Core asset + emits event", async () => {
+    type MintedEvent = { seasonId: BN; agent: PublicKey; asset: PublicKey };
+
+    const MPL_CORE = new PublicKey("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");
+    const asset = Keypair.generate();
+    const metadataUri = "ipfs://gladius/season-1/test.json";
 
     const eventPromise = new Promise<MintedEvent>((resolve, reject) => {
       const listener = program.addEventListener(
@@ -298,22 +302,33 @@ describe("gladius — full season lifecycle", () => {
       setTimeout(() => {
         program.removeEventListener(listener).catch(() => {});
         reject(new Error("AttestationMinted event timeout"));
-      }, 3000);
+      }, 5000);
     });
 
     await program.methods
-      .mintAttestation()
+      .mintAttestation(metadataUri)
       .accountsStrict({
         authority: admin.publicKey,
         gladiusConfig: configPda,
         season: seasonPda,
         agent: agentPda,
         entry: entryPda,
+        asset: asset.publicKey,
+        agentOwner: agentOwner.publicKey,
+        mplCoreProgram: MPL_CORE,
+        systemProgram: SystemProgram.programId,
       })
+      .signers([asset])
       .rpc();
 
     const received = await eventPromise;
     expect(received.seasonId.toString()).to.equal("0");
     expect(received.agent.toBase58()).to.equal(agentPda.toBase58());
+    expect(received.asset.toBase58()).to.equal(asset.publicKey.toBase58());
+
+    // The Core asset account now exists and is owned by mpl-core.
+    const info = await connection.getAccountInfo(asset.publicKey);
+    expect(info, "asset account").to.not.equal(null);
+    expect(info!.owner.toBase58()).to.equal(MPL_CORE.toBase58());
   });
 });

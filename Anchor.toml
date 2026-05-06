@@ -30,3 +30,12 @@ upgradeable = false
 bind_address = "127.0.0.1"
 ledger = ".anchor/test-ledger"
 rpc_port = 8899
+
+# mpl-core lives on devnet/mainnet; bundle it into the local validator
+# from a captured fixture so mint_attestation's CPI works in tests.
+# Fixture is captured via:
+#   solana program dump CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d \
+#     tests/fixtures/mpl_core.so --url devnet
+[[test.genesis]]
+address = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+program = "./tests/fixtures/mpl_core.so"
