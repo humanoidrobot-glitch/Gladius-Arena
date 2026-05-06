@@ -11,6 +11,7 @@ from typing import Any
 import httpx
 
 from app.config import settings
+from app.services._http import http_client
 
 _BASE = "https://api.helius.xyz/v0/webhooks"
 
@@ -35,11 +36,8 @@ class HeliusClient:
     async def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         url = f"{_BASE}{path}"
         params = {"api-key": self._api_key}
-        if self._client is not None:
-            resp = await self._client.request(method, url, params=params, **kwargs)
-        else:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.request(method, url, params=params, **kwargs)
+        async with http_client(self._client) as client:
+            resp = await client.request(method, url, params=params, **kwargs)
         if resp.status_code >= 400:
             raise HeliusError(f"helius {method} {path} → {resp.status_code}: {resp.text}")
         return resp.json() if resp.content else None

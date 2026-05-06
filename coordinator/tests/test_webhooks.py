@@ -37,7 +37,6 @@ def _swap_payload(
         "source": "JUPITER",
         "slot": 460000000,
         "timestamp": int(time.time()),
-        "fee": 5000,
         "feePayer": fee_payer,
         "tokenTransfers": [
             {
@@ -241,7 +240,6 @@ async def test_webhook_handles_fee_deducted_in_same_token(
         "source": "JUPITER",
         "slot": 460000001,
         "timestamp": int(time.time()),
-        "fee": 5000,
         "feePayer": wallet,
         "tokenTransfers": [
             {

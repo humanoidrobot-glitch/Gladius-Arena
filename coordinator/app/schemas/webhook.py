@@ -19,6 +19,5 @@ class HeliusEnhancedTx(BaseModel):
     source: str | None = None
     slot: int
     timestamp: int
-    fee: int = 0
     fee_payer: str = Field(alias="feePayer")
     token_transfers: list[TokenTransfer] = Field(default_factory=list, alias="tokenTransfers")
