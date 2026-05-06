@@ -1,5 +1,6 @@
 from app.models.agent import Agent
 from app.models.base import Base
+from app.models.helius_webhook import HeliusWebhook
 from app.models.observed_trade import ObservedTrade
 from app.models.portfolio_snapshot import PortfolioSnapshot
 from app.models.score import Score
@@ -9,6 +10,7 @@ from app.models.season_entry import SeasonEntry
 __all__ = [
     "Agent",
     "Base",
+    "HeliusWebhook",
     "ObservedTrade",
     "PortfolioSnapshot",
     "Score",

@@ -9,6 +9,7 @@ from app.models import Agent, Score, Season, SeasonEntry, SeasonStatus
 from app.schemas.agent import SeasonEntryResponse
 from app.schemas.leaderboard import LeaderboardEntry, LeaderboardResponse
 from app.schemas.season import SeasonCreate, SeasonResponse
+from app.services.helius_registrar import try_register_wallet
 from app.services.settlement import SeasonSettlementError, settle_season as do_settle
 
 router = APIRouter(prefix="/api/v1/seasons", tags=["seasons"])
@@ -113,6 +114,17 @@ async def join_season(
             detail="agent has already joined this season",
         ) from exc
     await session.refresh(entry)
+
+    # Best-effort: register the wallet with the global Helius webhook.
+    # No-op if HELIUS_API_KEY is unset; logs a warning if Helius is
+    # reachable but rejects the call. Either way the join itself
+    # succeeds — operators can re-register manually if needed.
+    webhook_id = await try_register_wallet(session, agent.wallet_pubkey)
+    if webhook_id is not None:
+        entry.helius_webhook_id = webhook_id
+        await session.commit()
+        await session.refresh(entry)
+
     return entry
 
 
