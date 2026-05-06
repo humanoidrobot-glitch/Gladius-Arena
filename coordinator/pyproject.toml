@@ -10,6 +10,8 @@ dependencies = [
     "pydantic-settings>=2.6",
     "sqlalchemy[asyncio]>=2.0",
     "asyncpg>=0.30",
+    "solders>=0.21",
+    "pyjwt>=2.9",
 ]
 
 [project.optional-dependencies]
