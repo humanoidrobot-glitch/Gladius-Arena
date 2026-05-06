@@ -1,0 +1,21 @@
+{
+  "name": "gladius-typescript-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Gladius example agent in TypeScript — momentum trader on devnet",
+  "scripts": {
+    "dev": "tsx agent.ts",
+    "start": "tsx agent.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "bs58": "^6.0.0",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

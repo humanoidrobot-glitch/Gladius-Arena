@@ -1,5 +1,6 @@
 [workspace]
 members = ["programs/*"]
+exclude = ["examples/rust_agent"]
 resolver = "2"
 
 [profile.release]
