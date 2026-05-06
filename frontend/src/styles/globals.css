@@ -29,6 +29,48 @@
   }
 }
 
+/* Ember keyframes live outside Tailwind's @theme so they ship as plain
+   CSS regardless of which utilities reference them, and HMR picks them
+   up without a Vite restart. */
+@keyframes ember-rise {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  8% {
+    transform: translate(calc(var(--drift, 0px) * 0.15), -8vh) scale(1);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(calc(var(--drift, 0px) * 0.85), -45vh) scale(0.7);
+    opacity: 0.85;
+  }
+  75% {
+    transform: translate(calc(var(--drift, 0px) * 0.4), -75vh) scale(0.45);
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate(var(--drift, 0px), -100vh) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes ember-flicker {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  25% {
+    filter: brightness(1.6);
+  }
+  55% {
+    filter: brightness(0.55);
+  }
+  80% {
+    filter: brightness(1.3);
+  }
+}
+
 @layer components {
   /* Stone-textured panel — the foundation of every card and container. */
   .stone-panel {

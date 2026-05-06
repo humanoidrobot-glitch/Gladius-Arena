@@ -81,15 +81,9 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.85" },
         },
-        "ember-rise": {
-          "0%": { transform: "translateY(0) scale(1)", opacity: "0" },
-          "20%": { opacity: "0.8" },
-          "100%": { transform: "translateY(-100vh) scale(0.4)", opacity: "0" },
-        },
       },
       animation: {
         "gold-flicker": "gold-flicker 4s ease-in-out infinite",
-        "ember-rise": "ember-rise 8s linear infinite",
       },
     },
   },
