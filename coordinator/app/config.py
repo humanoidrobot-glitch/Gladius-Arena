@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://gladius:gladius@localhost:5432/gladius"
     helius_api_key: str = ""
     helius_webhook_secret: str = ""
+    helius_webhook_url: str = "http://localhost:8000/api/v1/webhooks/helius"
     rpc_url: str = "https://api.devnet.solana.com"
     jwt_secret: str = "dev-only-change-in-production-please-use-32-plus-bytes"
     jwt_ttl_seconds: int = 24 * 3600
