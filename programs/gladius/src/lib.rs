@@ -37,4 +37,16 @@ pub mod gladius {
     ) -> Result<()> {
         instructions::create_season::handler(ctx, config, end_time)
     }
+
+    pub fn join_season(ctx: Context<JoinSeason>) -> Result<()> {
+        instructions::join_season::handler(ctx)
+    }
+
+    pub fn start_season(ctx: Context<StartSeason>) -> Result<()> {
+        instructions::start_season::handler(ctx)
+    }
+
+    pub fn settle_season(ctx: Context<SettleSeason>) -> Result<()> {
+        instructions::settle_season::handler(ctx)
+    }
 }

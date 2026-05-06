@@ -5,12 +5,9 @@ use anchor_lang::prelude::*;
 pub struct SeasonEntry {
     pub agent: Pubkey,
     pub season: Pubkey,
-    /// Wallet observed by Helius — usually `Agent::authority`, but kept
-    /// distinct so an agent could conceivably register a sub-wallet later.
     pub wallet: Pubkey,
-    pub starting_balance_usdc: u64,
-    /// `None` until the coordinator submits the final score; `Some` after
-    /// settlement. `score.is_some()` is the canonical "settled" predicate.
+    /// `score.is_some()` is the canonical "settled" predicate — there is no
+    /// separate `settled` flag.
     pub score: Option<FinalScore>,
     pub joined_at: i64,
     pub bump: u8,
@@ -20,6 +17,7 @@ pub struct SeasonEntry {
     AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, InitSpace, Debug,
 )]
 pub struct FinalScore {
+    pub starting_balance_usdc: u64,
     pub balance_usdc: u64,
     pub pnl_bps: i32,
     pub sharpe: i32,

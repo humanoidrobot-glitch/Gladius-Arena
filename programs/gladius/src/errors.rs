@@ -20,4 +20,12 @@ pub enum GladiusError {
     InvalidSeasonConfig,
     #[msg("Season end time must be in the future")]
     InvalidEndTime,
+    #[msg("Season is not accepting new entries")]
+    SeasonNotJoinable,
+    #[msg("Season has reached its participant cap")]
+    SeasonFull,
+    #[msg("Season is not in Pending status")]
+    SeasonNotPending,
+    #[msg("Season is not in Active status")]
+    SeasonNotActive,
 }
