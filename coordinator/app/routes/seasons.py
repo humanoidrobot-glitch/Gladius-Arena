@@ -5,8 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_wallet, require_admin
 from app.db.session import get_session
-from app.models import Agent, Season, SeasonEntry, SeasonStatus
+from app.models import Agent, Score, Season, SeasonEntry, SeasonStatus
 from app.schemas.agent import SeasonEntryResponse
+from app.schemas.leaderboard import LeaderboardEntry, LeaderboardResponse
 from app.schemas.season import SeasonCreate, SeasonResponse
 
 router = APIRouter(prefix="/api/v1/seasons", tags=["seasons"])
@@ -112,3 +113,40 @@ async def join_season(
         ) from exc
     await session.refresh(entry)
     return entry
+
+
+@router.get("/{season_id}/leaderboard", response_model=LeaderboardResponse)
+async def get_leaderboard(
+    season_id: int,
+    session: AsyncSession = Depends(get_session),
+) -> LeaderboardResponse:
+    season_row = await session.execute(
+        select(Season).where(Season.season_id_onchain == season_id)
+    )
+    season = season_row.scalar_one_or_none()
+    if season is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="season not found")
+
+    rows = await session.execute(
+        select(Score, Agent)
+        .join(Agent, Score.agent_id == Agent.id)
+        .where(Score.season_id == season.id)
+        .order_by(Score.rank)
+    )
+    entries = [
+        LeaderboardEntry(
+            rank=score.rank,
+            agent_id=score.agent_id,
+            wallet_pubkey=agent.wallet_pubkey,
+            name=agent.name,
+            pnl_bps=score.pnl_bps,
+            sharpe_x1000=score.sharpe_x1000,
+            max_drawdown_bps=score.max_drawdown_bps,
+            trade_count=score.trade_count,
+            sample_count=score.sample_count,
+            starting_balance_usdc=score.starting_balance_usdc,
+            balance_usdc=score.balance_usdc,
+        )
+        for score, agent in rows.all()
+    ]
+    return LeaderboardResponse(season_id=season.season_id_onchain, entries=entries)
