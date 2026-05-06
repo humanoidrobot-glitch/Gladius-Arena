@@ -46,9 +46,24 @@ export function LivePreview({
 
       <div className="mt-6 flex flex-col gap-1">
         <h3
-          className={`carved text-2xl uppercase ${
+          className={`font-display uppercase ${
             trimmed ? "text-gold-200" : "text-stone-400"
           }`}
+          style={{
+            fontSize:
+              displayName.length > 18
+                ? "0.95rem"
+                : displayName.length > 13
+                  ? "1.2rem"
+                  : "1.5rem",
+            letterSpacing: displayName.length > 13 ? "0.05em" : "0.18em",
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+            lineHeight: 1.15,
+            textShadow: trimmed
+              ? "0 1px 0 rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8), 0 0 16px rgba(201,168,76,0.18)"
+              : "none",
+          }}
         >
           {displayName}
         </h3>
