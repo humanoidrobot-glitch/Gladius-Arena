@@ -11,6 +11,7 @@ import logging
 from collections import defaultdict
 
 from app.schemas.events import GladiusEvent
+from app.services.emotion_mapper import annotate
 
 logger = logging.getLogger(__name__)
 _QUEUE_MAX = 100
@@ -33,6 +34,7 @@ class EventBroadcaster:
             del self._subs[season_id]
 
     async def publish(self, event: GladiusEvent) -> None:
+        annotate(event)
         for queue in list(self._subs.get(event.season_id, ())):
             try:
                 queue.put_nowait(event)
