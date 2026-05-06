@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     jwt_ttl_seconds: int = 24 * 3600
     nonce_ttl_seconds: int = 5 * 60
     admin_wallet: str = ""
+    # Snapshot worker interval. 0 disables the worker (useful for tests
+    # and for running a coordinator that only serves the API + WS).
+    snapshot_interval_seconds: int = 60
 
 
 settings = Settings()
