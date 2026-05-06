@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "dev-only-change-in-production-please-use-32-plus-bytes"
     jwt_ttl_seconds: int = 24 * 3600
     nonce_ttl_seconds: int = 5 * 60
+    admin_wallet: str = ""
 
 
 settings = Settings()

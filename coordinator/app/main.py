@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db.session import engine
-from app.routes import auth, health
+from app.routes import auth, health, seasons
 
 
 @asynccontextmanager
@@ -22,6 +22,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(auth.router)
+    app.include_router(seasons.router)
     return app
 
 
