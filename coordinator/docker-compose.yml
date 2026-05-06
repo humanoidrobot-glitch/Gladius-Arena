@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: gladius
+      POSTGRES_USER: gladius
+      POSTGRES_PASSWORD: gladius
+    ports:
+      - "5432:5432"
+    volumes:
+      - gladius-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gladius -d gladius"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  coordinator:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://gladius:gladius@db:5432/gladius
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  gladius-pg-data:
