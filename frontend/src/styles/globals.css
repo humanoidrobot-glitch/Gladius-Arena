@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-night-900 text-stone-50 font-body;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% -10%, rgba(201, 168, 76, 0.06), transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 110%, rgba(160, 49, 47, 0.04), transparent 60%);
+    background-attachment: fixed;
+    font-feature-settings: "kern", "liga", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    @apply bg-gold-700 text-stone-50;
+  }
+}
+
+@layer components {
+  /* Stone-textured panel — the foundation of every card and container. */
+  .stone-panel {
+    @apply relative bg-night-700 bg-stone-grain;
+    background-blend-mode: overlay;
+    box-shadow: inset 0 1px 0 0 rgba(201, 168, 76, 0.06),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+      0 24px 48px -32px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Gold rule — always thin, always intentional. */
+  .gold-rule {
+    @apply h-px w-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(201, 168, 76, 0.4) 20%,
+      rgba(201, 168, 76, 0.6) 50%,
+      rgba(201, 168, 76, 0.4) 80%,
+      transparent
+    );
+  }
+
+  /* Carved heading — chiseled into stone. */
+  .carved {
+    @apply font-display tracking-carved text-gold-300;
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.9),
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(201, 168, 76, 0.12);
+  }
+
+  /* Number readout — data, monospace, weighty. */
+  .readout {
+    @apply font-mono tabular-nums tracking-tight;
+  }
+
+  /* Gold-glow border for active/selected elements. */
+  .gold-frame {
+    @apply border border-gold-600/40;
+    box-shadow:
+      0 0 0 1px rgba(201, 168, 76, 0.08),
+      0 0 32px -8px rgba(201, 168, 76, 0.25),
+      inset 0 1px 0 0 rgba(201, 168, 76, 0.12);
+  }
+}
