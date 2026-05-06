@@ -107,6 +107,152 @@ export function tokenSymbol(mint: string): string {
   return TOKEN_SYMBOLS[mint] ?? `${mint.slice(0, 4)}…`;
 }
 
+export interface AttestationData {
+  seasonId: number;
+  seasonName: string;
+  rank: number;
+  totalAgents: number;
+  pnlBps: number;
+  sharpeX1000: number;
+  maxDrawdownBps: number;
+  tradeCount: number;
+  mintPubkey: string;
+  settledAt: number;
+}
+
+export interface SeasonHistoryRow {
+  seasonId: number;
+  rank: number;
+  totalAgents: number;
+  pnlBps: number;
+  sharpeX1000: number;
+  maxDrawdownBps: number;
+  tradeCount: number;
+  status: "settled" | "active" | "cancelled";
+  endedAt: number;
+}
+
+export interface TimeSeriesPoint {
+  /** Unix seconds. */
+  t: number;
+  /** PnL percentage at that time. */
+  pnlPct: number;
+}
+
+export interface AgentProfile {
+  agent: Agent;
+  bio: string;
+  registeredAt: number;
+  totalTrades: number;
+  totalSeasons: number;
+  bestRank: number;
+  attestations: AttestationData[];
+  history: SeasonHistoryRow[];
+  pnlSeries: TimeSeriesPoint[];
+}
+
+function generateRandomWalkPnL(days: number, seed: number): TimeSeriesPoint[] {
+  const points: TimeSeriesPoint[] = [];
+  const start = Date.now() / 1000 - days * 86400;
+  const stepCount = days * 6; // 4-hour granularity
+  let pnl = 0;
+  let n = seed;
+  for (let i = 0; i <= stepCount; i++) {
+    n = (n * 1103515245 + 12345) & 0x7fffffff;
+    const drift = ((n % 2000) - 950) / 1000; // bias slightly positive
+    pnl += drift;
+    points.push({ t: Math.floor(start + i * (86400 / 6)), pnlPct: pnl });
+  }
+  return points;
+}
+
+export function getMockProfile(agentId: number): AgentProfile {
+  const leaderboard = getMockLeaderboard();
+  const row = leaderboard.find((r) => r.agent.id === agentId) ?? leaderboard[0];
+  const isChampion = row.rank === 1;
+  const baseTime = Date.now() / 1000;
+
+  const attestations: AttestationData[] = [
+    {
+      seasonId: 0,
+      seasonName: "Founders' Run",
+      rank: Math.max(1, row.rank - 2),
+      totalAgents: 8,
+      pnlBps: Math.round((row.pnlBps - 1500) / 1.2),
+      sharpeX1000: Math.max(500, row.sharpeX1000 - 400),
+      maxDrawdownBps: row.maxDrawdownBps + 300,
+      tradeCount: Math.max(40, row.tradeCount - 60),
+      mintPubkey: pubkey(agentId * 13 + 1).slice(0, 44),
+      settledAt: baseTime - 30 * 86400,
+    },
+    {
+      seasonId: 1,
+      seasonName: "Inaugural Season",
+      rank: row.rank,
+      totalAgents: 12,
+      pnlBps: row.pnlBps,
+      sharpeX1000: row.sharpeX1000,
+      maxDrawdownBps: row.maxDrawdownBps,
+      tradeCount: row.tradeCount,
+      mintPubkey: pubkey(agentId * 13 + 2).slice(0, 44),
+      settledAt: baseTime - 1 * 86400,
+    },
+  ];
+
+  if (isChampion) {
+    attestations.push({
+      seasonId: 2,
+      seasonName: "Champion's Defense",
+      rank: 2,
+      totalAgents: 16,
+      pnlBps: 3940,
+      sharpeX1000: 1620,
+      maxDrawdownBps: 580,
+      tradeCount: 134,
+      mintPubkey: pubkey(agentId * 13 + 3).slice(0, 44),
+      settledAt: baseTime - 5 * 86400,
+    });
+  }
+
+  const history: SeasonHistoryRow[] = attestations.map((a) => ({
+    seasonId: a.seasonId,
+    rank: a.rank,
+    totalAgents: a.totalAgents,
+    pnlBps: a.pnlBps,
+    sharpeX1000: a.sharpeX1000,
+    maxDrawdownBps: a.maxDrawdownBps,
+    tradeCount: a.tradeCount,
+    status: "settled",
+    endedAt: a.settledAt,
+  }));
+
+  history.push({
+    seasonId: 3,
+    rank: row.rank,
+    totalAgents: 12,
+    pnlBps: row.pnlBps,
+    sharpeX1000: row.sharpeX1000,
+    maxDrawdownBps: row.maxDrawdownBps,
+    tradeCount: row.tradeCount,
+    status: "active",
+    endedAt: 0,
+  });
+
+  return {
+    agent: row.agent,
+    bio:
+      `Trading the ${row.tradeCount}-trade season with risk-adjusted ` +
+      `performance of ${(row.sharpeX1000 / 1000).toFixed(2)} Sharpe.`,
+    registeredAt: baseTime - 45 * 86400,
+    totalTrades: history.reduce((s, h) => s + h.tradeCount, 0),
+    totalSeasons: attestations.length + 1,
+    bestRank: Math.min(...attestations.map((a) => a.rank), row.rank),
+    attestations: attestations.reverse(),
+    history: history.sort((a, b) => b.seasonId - a.seasonId),
+    pnlSeries: generateRandomWalkPnL(7, agentId * 31 + 7),
+  };
+}
+
 export function makeMockSwapEvent(seq: number): GladiusEvent {
   const leaderboard = getMockLeaderboard();
   const row = leaderboard[seq % leaderboard.length];

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import type { LeaderboardRow } from "../lib/types";
 import { AvatarThumb } from "./AvatarThumb";
 import { PnLBar, PnLDisplay } from "./PnLDisplay";
@@ -23,8 +25,9 @@ export function AgentRow({ row, recentTradeFlash }: AgentRowProps) {
     : "";
 
   return (
-    <article
-      className={`stone-panel relative grid items-center gap-6 border px-6 py-5 transition-colors duration-300 ${frameClass} ${flashClass}`}
+    <Link
+      to={`/agents/${row.agent.id}`}
+      className={`stone-panel relative grid items-center gap-6 border px-6 py-5 transition-colors duration-300 hover:border-gold-500/40 ${frameClass} ${flashClass}`}
       style={{
         gridTemplateColumns: "auto auto minmax(0, 1fr) auto auto auto",
       }}
@@ -78,7 +81,7 @@ export function AgentRow({ row, recentTradeFlash }: AgentRowProps) {
           USDC
         </span>
       </div>
-    </article>
+    </Link>
   );
 }
 

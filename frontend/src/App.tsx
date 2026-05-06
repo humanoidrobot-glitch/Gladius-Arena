@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { Layout } from "./components/Layout";
+import { AgentProfilePage } from "./pages/AgentProfilePage";
 import { HomePage } from "./pages/HomePage";
 import { LeaderboardPage } from "./pages/LeaderboardPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -14,6 +15,7 @@ export function App() {
           <Route path="/seasons" element={<LeaderboardPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/agents/:id" element={<AgentProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>
