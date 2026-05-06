@@ -69,27 +69,27 @@ function CrestTile({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex flex-col items-center gap-3 rounded-sm border bg-night-800/40 px-4 py-5 text-center transition-all duration-200 ${
+      className={`group relative flex flex-col items-center gap-4 rounded-sm border bg-night-800/40 px-5 py-6 text-center transition-all duration-200 ${
         selected
           ? "border-gold-500/60 bg-night-700/60 shadow-gold-glow"
           : "border-stone-700/40 hover:border-gold-700/50 hover:bg-night-700/40"
       } ${disabled ? "opacity-40" : ""}`}
     >
-      <AvatarThumb seed={option.seed} size={56} />
-      <div className="flex flex-col gap-0.5">
+      <AvatarThumb seed={option.seed} size={64} />
+      <div className="flex flex-col gap-1.5">
         <span
-          className={`font-display text-[11px] uppercase tracking-imperial ${
+          className={`font-display text-base uppercase tracking-imperial ${
             selected ? "text-gold-200" : "text-stone-50"
           }`}
         >
           {option.name}
         </span>
-        <span className="font-body text-[11px] italic leading-tight text-stone-300">
+        <span className="font-body text-sm italic leading-snug text-stone-200">
           {option.archetype}
         </span>
       </div>
       {selected && (
-        <span className="absolute right-2 top-2 rounded-full bg-gold-700/40 px-1.5 py-px font-display text-[8px] uppercase tracking-carved text-gold-100">
+        <span className="absolute right-2 top-2 rounded-full bg-gold-700/40 px-1.5 py-0.5 font-display text-[9px] uppercase tracking-carved text-gold-100">
           Sworn
         </span>
       )}
