@@ -14,6 +14,7 @@ class Agent(Base):
     name: Mapped[str] = mapped_column(String(32))
     metadata_uri: Mapped[str] = mapped_column(String(200), default="")
     three_ws_agent_id: Mapped[str | None] = mapped_column(String(44), default=None)
+    avatar_glb_url: Mapped[str | None] = mapped_column(String(512), default=None)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

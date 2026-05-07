@@ -1,3 +1,4 @@
+import { avatarUrl } from "../../lib/api";
 import { type AvatarOption } from "../../lib/avatars";
 import { AgentAvatar3D } from "../AgentAvatar3D";
 import { AvatarThumb } from "../AvatarThumb";
@@ -7,6 +8,7 @@ interface LivePreviewProps {
   name: string;
   selectedAvatar: AvatarOption | null;
   threeWsAgentId: string | null;
+  avatarGlbUrl: string | null;
 }
 
 export function LivePreview({
@@ -14,10 +16,13 @@ export function LivePreview({
   name,
   selectedAvatar,
   threeWsAgentId,
+  avatarGlbUrl,
 }: LivePreviewProps) {
   const trimmed = name.trim();
   const displayName = trimmed.length > 0 ? trimmed : "Unnamed";
-  const ready = Boolean(walletPubkey && trimmed && (selectedAvatar || threeWsAgentId));
+  const ready = Boolean(
+    walletPubkey && trimmed && (selectedAvatar || threeWsAgentId || avatarGlbUrl),
+  );
 
   return (
     <aside className="stone-panel sticky top-8 flex flex-col items-stretch border border-gold-700/30 px-6 py-7">
@@ -29,7 +34,15 @@ export function LivePreview({
         <div className="absolute inset-0 bg-torch-light" />
         <div className="relative flex flex-col items-center gap-3">
           {threeWsAgentId ? (
-            <ThreeWsAgentPreview agentId={threeWsAgentId} />
+            <Avatar3DPreview
+              source={{ agentId: threeWsAgentId }}
+              label="three.ws preview"
+            />
+          ) : avatarGlbUrl ? (
+            <Avatar3DPreview
+              source={{ body: avatarUrl(avatarGlbUrl) }}
+              label="custom GLB preview"
+            />
           ) : selectedAvatar ? (
             <AvatarThumb seed={selectedAvatar.seed} size={140} />
           ) : (
@@ -39,9 +52,11 @@ export function LivePreview({
         <p className="readout absolute bottom-2 right-3 text-[9px] uppercase tracking-wider text-stone-300">
           {threeWsAgentId
             ? "agent-3d · three.ws"
-            : selectedAvatar
-              ? "forged crest"
-              : "pending"}
+            : avatarGlbUrl
+              ? "agent-3d · custom glb"
+              : selectedAvatar
+                ? "forged crest"
+                : "pending"}
         </p>
       </div>
 
@@ -68,7 +83,7 @@ export function LivePreview({
         >
           {displayName}
         </h3>
-        {selectedAvatar && !threeWsAgentId && (
+        {selectedAvatar && !threeWsAgentId && !avatarGlbUrl && (
           <p className="font-body text-sm italic text-stone-200">
             {selectedAvatar.archetype}
           </p>
@@ -76,6 +91,11 @@ export function LivePreview({
         {threeWsAgentId && (
           <p className="font-body text-sm italic text-stone-200">
             three.ws agent · linked
+          </p>
+        )}
+        {avatarGlbUrl && !threeWsAgentId && (
+          <p className="font-body text-sm italic text-stone-200">
+            custom 3D model · uploaded
           </p>
         )}
       </div>
@@ -94,9 +114,11 @@ export function LivePreview({
           <span className="font-display text-xs uppercase tracking-imperial text-stone-50">
             {threeWsAgentId
               ? "three.ws"
-              : selectedAvatar
-                ? selectedAvatar.name
-                : "—"}
+              : avatarGlbUrl
+                ? "custom GLB"
+                : selectedAvatar
+                  ? selectedAvatar.name
+                  : "—"}
           </span>
         </Row>
         <Row label="Status">
@@ -162,10 +184,16 @@ function EmptyStage() {
   );
 }
 
-function ThreeWsAgentPreview({ agentId }: { agentId: string }) {
+type Source = { agentId: string } | { body: string };
+
+function Avatar3DPreview({ source, label }: { source: Source; label: string }) {
+  const tag = "agentId" in source ? source.agentId.slice(0, 14) : "custom glb";
+  const truncated =
+    "agentId" in source && source.agentId.length > 14 ? "…" : "";
   return (
     <AgentAvatar3D
-      agentId={agentId}
+      agentId={"agentId" in source ? source.agentId : null}
+      body={"body" in source ? source.body : null}
       style={{ width: 192, height: 224, display: "block" }}
       fallback={
         <div className="flex h-56 w-44 flex-col items-center justify-center gap-2 border border-gold-600/40 bg-night-700/60">
@@ -173,15 +201,15 @@ function ThreeWsAgentPreview({ agentId }: { agentId: string }) {
             agent-3d
           </span>
           <span className="readout text-[10px] text-stone-300">
-            {agentId.slice(0, 14)}
-            {agentId.length > 14 ? "…" : ""}
+            {tag}
+            {truncated}
           </span>
           <span className="font-body text-[11px] italic text-stone-300">
             three.ws script loading…
           </span>
         </div>
       }
-      ariaLabel="three.ws preview"
+      ariaLabel={label}
     />
   );
 }

@@ -18,5 +18,11 @@ class Settings(BaseSettings):
     # and for running a coordinator that only serves the API + WS).
     snapshot_interval_seconds: int = 60
 
+    # Custom-GLB avatar uploads. Local-disk backend by default — set to
+    # an absolute path or leave as a relative dir for dev.
+    avatar_storage_dir: str = "./uploads/avatars"
+    avatar_max_bytes: int = 50 * 1024 * 1024  # 50 MB
+    avatar_url_prefix: str = "/api/v1/avatars/files"
+
 
 settings = Settings()

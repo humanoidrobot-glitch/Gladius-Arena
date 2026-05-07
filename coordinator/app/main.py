@@ -5,7 +5,7 @@ from fastapi import FastAPI
 
 from app.config import settings
 from app.db.session import engine
-from app.routes import agents, auth, events_ws, health, seasons, webhooks
+from app.routes import agents, auth, avatars, events_ws, health, seasons, webhooks
 from app.services.jupiter_prices import JupiterPriceClient
 from app.services.snapshot_worker import SnapshotWorker
 from app.services.solana_rpc import SolanaRpcClient
@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(agents.router)
+    app.include_router(avatars.router)
     app.include_router(seasons.router)
     app.include_router(webhooks.router)
     app.include_router(events_ws.router)

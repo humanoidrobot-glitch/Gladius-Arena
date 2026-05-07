@@ -13,22 +13,40 @@ export function RegisterPage() {
   const [name, setName] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarOption | null>(null);
   const [threeWsAgentId, setThreeWsAgentId] = useState<string | null>(null);
+  const [avatarGlbUrl, setAvatarGlbUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [enteredAt, setEnteredAt] = useState<number | null>(null);
 
   const trimmedName = name.trim();
   const nameComplete = trimmedName.length > 0;
-  const hasCrest = Boolean(selectedAvatar || threeWsAgentId);
+  const hasCrest = Boolean(selectedAvatar || threeWsAgentId || avatarGlbUrl);
   const allComplete = Boolean(walletPubkey) && nameComplete && hasCrest;
+
+  // Real Ed25519 challenge/sign/verify lands in Sprint 5. Until then the
+  // wallet pubkey stands in as the auth token so the upload tier can be
+  // exercised in dev — the backend will 401 and CustomUpload surfaces it.
+  const authToken = walletPubkey;
 
   function handleSelectAvatar(option: AvatarOption) {
     setSelectedAvatar(option);
     setThreeWsAgentId(null);
+    setAvatarGlbUrl(null);
   }
 
   function handleLinkThreeWs(agentId: string | null) {
     setThreeWsAgentId(agentId);
-    if (agentId) setSelectedAvatar(null);
+    if (agentId) {
+      setSelectedAvatar(null);
+      setAvatarGlbUrl(null);
+    }
+  }
+
+  function handleUploadCustom(url: string | null) {
+    setAvatarGlbUrl(url);
+    if (url) {
+      setSelectedAvatar(null);
+      setThreeWsAgentId(null);
+    }
   }
 
   function handleSubmit() {
@@ -69,8 +87,11 @@ export function RegisterPage() {
           <AvatarPicker
             selectedId={selectedAvatar?.id ?? null}
             threeWsAgentId={threeWsAgentId}
+            avatarGlbUrl={avatarGlbUrl}
             onSelect={handleSelectAvatar}
             onLinkThreeWs={handleLinkThreeWs}
+            onUploadCustom={handleUploadCustom}
+            authToken={authToken}
             enabled={Boolean(walletPubkey) && nameComplete}
           />
           <SubmitStep
@@ -94,6 +115,7 @@ export function RegisterPage() {
             name={name}
             selectedAvatar={selectedAvatar}
             threeWsAgentId={threeWsAgentId}
+            avatarGlbUrl={avatarGlbUrl}
           />
         </div>
       </div>

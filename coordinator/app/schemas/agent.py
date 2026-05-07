@@ -9,6 +9,7 @@ class AgentRegister(BaseModel):
     name: str = Field(min_length=1, max_length=32)
     metadata_uri: str = Field(default="", max_length=200)
     three_ws_agent_id: WalletAddress | None = None
+    avatar_glb_url: str | None = Field(default=None, max_length=512)
 
 
 class AgentResponse(BaseModel):
@@ -19,6 +20,7 @@ class AgentResponse(BaseModel):
     name: str
     metadata_uri: str
     three_ws_agent_id: str | None
+    avatar_glb_url: str | None
     created_at: datetime
 
 

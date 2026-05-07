@@ -22,6 +22,7 @@ async def register_agent(
         name=payload.name,
         metadata_uri=payload.metadata_uri,
         three_ws_agent_id=payload.three_ws_agent_id,
+        avatar_glb_url=payload.avatar_glb_url,
     )
     session.add(agent)
     try:

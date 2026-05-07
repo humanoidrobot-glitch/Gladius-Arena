@@ -2,53 +2,80 @@ import { useState } from "react";
 
 import { AVATAR_GALLERY, type AvatarOption } from "../../lib/avatars";
 import { AvatarThumb } from "../AvatarThumb";
+import { CustomUpload } from "./CustomUpload";
 import { StepShell } from "./StepShell";
 
 interface AvatarPickerProps {
   selectedId: string | null;
   threeWsAgentId: string | null;
+  avatarGlbUrl: string | null;
   onSelect: (option: AvatarOption) => void;
   onLinkThreeWs: (agentId: string | null) => void;
+  onUploadCustom: (url: string | null) => void;
+  authToken: string | null;
   enabled: boolean;
 }
 
 export function AvatarPicker({
   selectedId,
   threeWsAgentId,
+  avatarGlbUrl,
   onSelect,
   onLinkThreeWs,
+  onUploadCustom,
+  authToken,
   enabled,
 }: AvatarPickerProps) {
-  const state = !enabled
-    ? "locked"
-    : selectedId || threeWsAgentId
-      ? "complete"
-      : "active";
+  const anyChosen = Boolean(selectedId || threeWsAgentId || avatarGlbUrl);
+  const state = !enabled ? "locked" : anyChosen ? "complete" : "active";
 
   return (
     <StepShell numeral="III" title="Choose Your Avatar" state={state}>
       <p className="mb-6 max-w-2xl font-body text-base text-stone-200">
-        Two ways to take the field. A real{" "}
-        <span className="text-gold-200">three.ws</span> identity becomes a 3D
-        avatar that animates to every trade. Or pick one of eight forged crests
-        below if you haven't built a three.ws agent yet.
+        Three paths to a body. A real{" "}
+        <span className="text-gold-200">three.ws</span> identity is the
+        recommended one — it animates to every trade and is portable across the
+        agent economy. Otherwise, upload your own GLB or pick one of eight
+        forged crests.
       </p>
 
       <ThreeWsFeature
         value={threeWsAgentId}
-        onChange={onLinkThreeWs}
+        onChange={(id) => {
+          onLinkThreeWs(id);
+          if (id) onUploadCustom(null);
+        }}
         disabled={!enabled}
       />
 
-      <Divider label={threeWsAgentId ? "or replace it with a forged crest" : "or pick a forged crest"} />
+      <Divider label="or upload your own 3D model" />
+
+      <CustomUpload
+        avatarGlbUrl={avatarGlbUrl}
+        onUploaded={(url) => {
+          onUploadCustom(url);
+          onLinkThreeWs(null);
+        }}
+        onCleared={() => onUploadCustom(null)}
+        authToken={authToken}
+        disabled={!enabled || Boolean(threeWsAgentId)}
+      />
+
+      <Divider
+        label={
+          threeWsAgentId || avatarGlbUrl
+            ? "or replace it with a forged crest"
+            : "or pick a forged crest"
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {AVATAR_GALLERY.map((option) => (
           <CrestTile
             key={option.id}
             option={option}
-            selected={!threeWsAgentId && option.id === selectedId}
-            disabled={!enabled || Boolean(threeWsAgentId)}
+            selected={!threeWsAgentId && !avatarGlbUrl && option.id === selectedId}
+            disabled={!enabled || Boolean(threeWsAgentId) || Boolean(avatarGlbUrl)}
             onClick={() => onSelect(option)}
           />
         ))}
