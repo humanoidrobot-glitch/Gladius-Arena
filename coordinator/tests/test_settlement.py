@@ -120,3 +120,58 @@ async def test_settle_route_404_for_missing_season(
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert resp.status_code == 404
+
+
+async def test_settle_emits_full_onchain_batch_sequence(
+    db_session: AsyncSession, monkeypatch
+) -> None:
+    """Deferred-deploy mode: settle should still walk the full
+    register_agent → create_season → join_season → submit_final_score
+    → mint_attestation sequence so that when AnchorSubmitter lands the
+    call sites are already in place."""
+    from app.services import onchain, settlement
+
+    calls: list[tuple[str, tuple]] = []
+
+    class RecordingSubmitter:
+        async def register_agent(self, agent):
+            calls.append(("register_agent", (agent.wallet_pubkey,)))
+
+        async def create_season(self, season):
+            calls.append(("create_season", (season.season_id_onchain,)))
+
+        async def join_season(self, season, agent, entry):
+            calls.append(("join_season", (season.season_id_onchain, agent.wallet_pubkey)))
+
+        async def submit_final_score(self, season, score):
+            calls.append(("submit_final_score", (season.season_id_onchain, score.agent_id, score.rank)))
+
+        async def mint_attestation(self, season, agent, entry, metadata_uri):
+            calls.append(("mint_attestation", (season.season_id_onchain, agent.wallet_pubkey, metadata_uri)))
+
+    monkeypatch.setattr(onchain, "submitter", RecordingSubmitter())
+    monkeypatch.setattr(settlement, "submitter", RecordingSubmitter())
+
+    season, alpha, bravo = await _seed_active_season_with_two_agents(db_session)
+
+    await settlement.settle_season(db_session, season=season)
+
+    kinds = [k for k, _ in calls]
+    assert kinds.count("register_agent") == 2
+    assert kinds.count("create_season") == 1
+    assert kinds.count("join_season") == 2
+    assert kinds.count("submit_final_score") == 2
+    assert kinds.count("mint_attestation") == 2
+
+    # Sequence: all register_agent before create_season, create_season
+    # before any join_season, etc.
+    first = {k: kinds.index(k) for k in set(kinds)}
+    last = {k: len(kinds) - 1 - kinds[::-1].index(k) for k in set(kinds)}
+    assert last["register_agent"] < first["create_season"]
+    assert last["create_season"] < first["join_season"]
+    assert last["join_season"] < first["submit_final_score"]
+    assert last["submit_final_score"] < first["mint_attestation"]
+
+    # mint_attestation is given a non-empty metadata_uri.
+    mint_uris = [args[2] for k, args in calls if k == "mint_attestation"]
+    assert all(uri.startswith("http") for uri in mint_uris)

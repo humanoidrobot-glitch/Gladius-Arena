@@ -24,5 +24,14 @@ class Settings(BaseSettings):
     avatar_max_bytes: int = 50 * 1024 * 1024  # 50 MB
     avatar_url_prefix: str = "/api/v1/avatars/files"
 
+    # Phase 1 default: on-chain program isn't deployed yet, so settlement
+    # logs intent without emitting transactions. Flip to True after
+    # mainnet deploy + AnchorSubmitter wiring lands.
+    onchain_enabled: bool = False
+    # Public base URL serving attestation JSON. Stub for Phase 1 — the
+    # real value is the IPFS / Arweave gateway hosting per-attestation
+    # cards. Used to construct metadata_uri at mint time.
+    attestation_metadata_base_url: str = "https://api.gladius.xyz/attestations"
+
 
 settings = Settings()
