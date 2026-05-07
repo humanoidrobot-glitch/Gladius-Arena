@@ -35,7 +35,10 @@ export function Hero() {
         </p>
 
         <div className="mt-14 w-full">
-          <AvatarStage height={340} />
+          <AvatarStage
+            agentId={import.meta.env.VITE_HERO_AGENT_ID ?? null}
+            height={340}
+          />
         </div>
 
         <div className="mt-14">
