@@ -62,6 +62,49 @@ export function verifyChallenge(
   });
 }
 
+export interface AgentResponse {
+  id: number;
+  wallet_pubkey: string;
+  name: string;
+  metadata_uri: string;
+  three_ws_agent_id: string | null;
+  avatar_glb_url: string | null;
+  created_at: string;
+}
+
+export interface AgentRegisterPayload {
+  name: string;
+  metadata_uri?: string;
+  three_ws_agent_id?: string | null;
+  avatar_glb_url?: string | null;
+}
+
+export async function registerAgent(
+  payload: AgentRegisterPayload,
+  token: string | null,
+): Promise<AgentResponse> {
+  if (!token) {
+    throw new ApiError(401, "wallet must be connected to register");
+  }
+  const resp = await fetch(`${API_BASE}/api/v1/agents/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) {
+    let detail = `${resp.status} ${resp.statusText}`;
+    try {
+      const body = (await resp.json()) as { detail?: string };
+      if (body.detail) detail = body.detail;
+    } catch {}
+    throw new ApiError(resp.status, detail);
+  }
+  return (await resp.json()) as AgentResponse;
+}
+
 export async function uploadAvatar(file: File, token: string | null): Promise<AvatarUploadResult> {
   if (!token) {
     throw new ApiError(401, "wallet must be connected to upload avatars");

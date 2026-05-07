@@ -6,6 +6,7 @@ import { NameStep } from "../components/registration/NameStep";
 import { StepShell } from "../components/registration/StepShell";
 import { SubmitStep } from "../components/registration/SubmitStep";
 import { WalletStep } from "../components/registration/WalletStep";
+import { ApiError, registerAgent } from "../lib/api";
 import { AVATAR_GALLERY, type AvatarOption } from "../lib/avatars";
 import { useSession } from "../lib/session";
 
@@ -17,6 +18,7 @@ export function RegisterPage() {
   const [avatarGlbUrl, setAvatarGlbUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [enteredAt, setEnteredAt] = useState<number | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const trimmedName = name.trim();
   const nameComplete = trimmedName.length > 0;
@@ -49,13 +51,37 @@ export function RegisterPage() {
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!allComplete || submitting) return;
     setSubmitting(true);
-    window.setTimeout(() => {
+    setSubmitError(null);
+    try {
+      await registerAgent(
+        {
+          name: trimmedName,
+          three_ws_agent_id: threeWsAgentId,
+          avatar_glb_url: avatarGlbUrl,
+        },
+        authToken,
+      );
       setEnteredAt(Date.now());
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        // Already registered — surface as success since the wallet is
+        // bound to an existing agent. UX-wise the gladiator is "in".
+        setEnteredAt(Date.now());
+      } else {
+        setSubmitError(
+          err instanceof ApiError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : "registration failed",
+        );
+      }
+    } finally {
       setSubmitting(false);
-    }, 1500);
+    }
   }
 
   return (
@@ -100,12 +126,12 @@ export function RegisterPage() {
             onSubmit={handleSubmit}
             submitting={submitting}
             enteredAt={enteredAt}
+            error={submitError}
           />
 
-          {/* Tiny safety: surface that nothing has moved on-chain in mock mode. */}
           <p className="font-display text-[10px] uppercase tracking-carved text-stone-300">
-            Mock flow · Sprint 5 wires the real Solana register_agent +
-            join_season instructions
+            Phase I · deferred-on-chain mode · attestations mint once the
+            program deploys to mainnet
           </p>
         </div>
 

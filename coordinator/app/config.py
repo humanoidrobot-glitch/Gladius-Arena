@@ -33,5 +33,10 @@ class Settings(BaseSettings):
     # cards. Used to construct metadata_uri at mint time.
     attestation_metadata_base_url: str = "https://api.gladius.xyz/attestations"
 
+    # CORS — frontend origins allowed to call the coordinator. Local dev
+    # default covers `vite` (5173) and the dev preview port. Production
+    # sets via the `CORS_ORIGINS` env var as a JSON list.
+    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:5174"]
+
 
 settings = Settings()

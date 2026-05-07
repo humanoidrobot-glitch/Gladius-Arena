@@ -117,3 +117,179 @@
       inset 0 1px 0 0 rgba(201, 168, 76, 0.12);
   }
 }
+
+/* ───────────────────────────────────────────────────────────────────────
+   Wallet adapter overrides — fold @solana/wallet-adapter-react-ui into
+   the Cinzel + gold-leaf aesthetic. The library ships with default
+   purple/blue styling that fights the rest of the UI; these rules pin
+   the trigger button + modal to the project palette.
+   Targets the upstream class names (`.wallet-adapter-*`) so an upstream
+   bump won't silently drop the styling.
+   ─────────────────────────────────────────────────────────────────── */
+
+.wallet-adapter-button {
+  background: transparent !important;
+  border: 1px solid rgba(201, 168, 76, 0.4) !important;
+  border-radius: 2px !important;
+  padding: 0.6rem 1.2rem !important;
+  font-family: "Cinzel", Georgia, serif !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  color: #ead6a3 !important;
+  height: auto !important;
+  line-height: 1.2 !important;
+  transition: all 0.2s ease !important;
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.08),
+    inset 0 1px 0 0 rgba(201, 168, 76, 0.08) !important;
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background: rgba(20, 17, 13, 0.6) !important;
+  border-color: rgba(201, 168, 76, 0.7) !important;
+  color: #f5edd0 !important;
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.18),
+    0 0 24px -4px rgba(201, 168, 76, 0.25),
+    inset 0 1px 0 0 rgba(201, 168, 76, 0.12) !important;
+}
+
+.wallet-adapter-button[disabled] {
+  background: transparent !important;
+  color: rgba(168, 162, 148, 0.4) !important;
+  border-color: rgba(58, 53, 45, 0.4) !important;
+  cursor: not-allowed !important;
+}
+
+.wallet-adapter-button-trigger {
+  background: linear-gradient(180deg, rgba(201, 168, 76, 0.15), rgba(94, 78, 37, 0.25)) !important;
+  border-color: rgba(201, 168, 76, 0.5) !important;
+}
+
+.wallet-adapter-button-trigger:not([disabled]):hover {
+  background: linear-gradient(180deg, rgba(201, 168, 76, 0.25), rgba(138, 114, 51, 0.3)) !important;
+  border-color: rgba(201, 168, 76, 0.85) !important;
+}
+
+.wallet-adapter-button .wallet-adapter-button-start-icon,
+.wallet-adapter-button .wallet-adapter-button-end-icon {
+  margin-right: 0.6rem !important;
+}
+
+.wallet-adapter-button .wallet-adapter-button-start-icon img,
+.wallet-adapter-button .wallet-adapter-button-end-icon img {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Modal overlay — darken, no purple sheen. */
+.wallet-adapter-modal-overlay {
+  background: rgba(10, 8, 7, 0.85) !important;
+  backdrop-filter: blur(2px);
+}
+
+/* Modal panel — stone-panel shape with gold rim. */
+.wallet-adapter-modal-wrapper {
+  background: #14110d !important;
+  border: 1px solid rgba(201, 168, 76, 0.25) !important;
+  border-radius: 2px !important;
+  box-shadow:
+    inset 0 1px 0 0 rgba(201, 168, 76, 0.06),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(201, 168, 76, 0.08),
+    0 24px 64px -24px rgba(0, 0, 0, 0.95) !important;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.07  0 0 0 0 0.06  0 0 0 0 0.05  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>") !important;
+  background-blend-mode: overlay !important;
+}
+
+.wallet-adapter-modal-title {
+  font-family: "Cinzel", Georgia, serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  color: #d3b25f !important;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(201, 168, 76, 0.12) !important;
+  padding: 1.5rem 1.5rem 0.5rem !important;
+}
+
+.wallet-adapter-modal-button-close {
+  background: transparent !important;
+  color: rgba(168, 162, 148, 0.7) !important;
+  transition: color 0.15s ease !important;
+}
+
+.wallet-adapter-modal-button-close:hover {
+  color: #ead6a3 !important;
+  background: transparent !important;
+}
+
+.wallet-adapter-modal-list {
+  margin: 0 !important;
+  padding: 0.75rem 0.75rem 1.25rem !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button {
+  background: rgba(15, 12, 9, 0.6) !important;
+  border: 1px solid rgba(58, 53, 45, 0.5) !important;
+  border-radius: 2px !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0.85rem 1rem !important;
+  font-family: "Cinzel", Georgia, serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.12em !important;
+  color: #cec8bc !important;
+  justify-content: flex-start !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button:hover {
+  background: rgba(20, 17, 13, 0.85) !important;
+  border-color: rgba(201, 168, 76, 0.6) !important;
+  color: #ead6a3 !important;
+}
+
+.wallet-adapter-modal-list-more {
+  color: rgba(168, 162, 148, 0.7) !important;
+  font-family: "Cinzel", Georgia, serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.wallet-adapter-modal-list-more:hover {
+  color: #ead6a3 !important;
+}
+
+/* Dropdown menu (when wallet is connected and the multi-button shows
+   "change wallet / disconnect"). */
+.wallet-adapter-dropdown-list {
+  background: #14110d !important;
+  border: 1px solid rgba(201, 168, 76, 0.25) !important;
+  border-radius: 2px !important;
+  padding: 0.4rem !important;
+  box-shadow:
+    0 0 0 1px rgba(201, 168, 76, 0.08),
+    0 16px 40px -16px rgba(0, 0, 0, 0.95) !important;
+}
+
+.wallet-adapter-dropdown-list-item {
+  background: transparent !important;
+  border-radius: 2px !important;
+  font-family: "Cinzel", Georgia, serif !important;
+  font-size: 11px !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  color: #cec8bc !important;
+  padding: 0.55rem 0.85rem !important;
+}
+
+.wallet-adapter-dropdown-list-item:hover {
+  background: rgba(20, 17, 13, 0.6) !important;
+  color: #ead6a3 !important;
+}

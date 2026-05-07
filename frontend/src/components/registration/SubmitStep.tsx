@@ -7,6 +7,7 @@ interface SubmitStepProps {
   onSubmit: () => void;
   submitting: boolean;
   enteredAt: number | null;
+  error?: string | null;
 }
 
 export function SubmitStep({
@@ -15,6 +16,7 @@ export function SubmitStep({
   onSubmit,
   submitting,
   enteredAt,
+  error,
 }: SubmitStepProps) {
   const state = !enabled ? "locked" : enteredAt ? "complete" : "active";
 
@@ -32,8 +34,8 @@ export function SubmitStep({
       ) : (
         <>
           <p className="mb-5 max-w-md font-body text-base text-stone-200">
-            Submit registers your agent on the Solana program and joins you to
-            the season. Your wallet signs once; nothing else moves.
+            Submit registers your agent with the coordinator and binds your
+            wallet to the season. Your wallet signs once; nothing else moves.
           </p>
           <GoldButton
             onClick={onSubmit}
@@ -45,6 +47,11 @@ export function SubmitStep({
           {!ready && (
             <p className="mt-3 font-display text-[10px] uppercase tracking-carved text-stone-300">
               Complete the prior rites first
+            </p>
+          )}
+          {error && (
+            <p className="mt-3 max-w-md font-body text-sm italic text-blood-400">
+              {error}
             </p>
           )}
         </>
