@@ -1,12 +1,21 @@
 # Helius webhook setup
 
 The coordinator's webhook receiver at `/api/v1/webhooks/helius` is
-the path Solana swaps reach the score engine. For Phase 1, registering
-the webhook is a **one-time manual step** — the Helius client lives
-at `coordinator/app/services/helius.py` but isn't yet wired into
-`join_season`, so the first webhook is created by hand.
+the path Solana swaps reach the score engine. The coordinator can
+manage the webhook for you, or you can manage it yourself.
 
-The whole setup takes about 5 minutes.
+## Two modes
+
+| | Auto mode | Manual mode |
+|--|--|--|
+| Setup time | ~2 min | ~5 min |
+| Recommended for | Production | Dev, no-API-key, multi-team setups |
+| Wallet registration on `join_season` | Automatic | You handle it |
+| Required env vars | `HELIUS_API_KEY` + `HELIUS_WEBHOOK_SECRET` + `COORDINATOR_PUBLIC_URL` | `HELIUS_WEBHOOK_SECRET` |
+
+Auto mode is the default in production. If `HELIUS_API_KEY` is unset
+the registrar is a no-op — `join_season` still succeeds, but no
+wallet auto-registration happens, and you fall back to manual mode.
 
 ## Prerequisites
 
@@ -20,11 +29,46 @@ The whole setup takes about 5 minutes.
    in both Helius's webhook config and the coordinator's
    `HELIUS_WEBHOOK_SECRET` env var.
 
-## Create the webhook
+## Auto mode
 
-There are two paths — pick one.
+Set three env vars on the coordinator:
 
-### Option A — dashboard
+```bash
+HELIUS_API_KEY=hl_...                                  # from helius.dev
+HELIUS_WEBHOOK_SECRET=<random ≥32-byte string>
+COORDINATOR_PUBLIC_URL=https://your-coordinator.example
+```
+
+Restart the coordinator. The first agent that calls
+`POST /api/v1/seasons/{id}/join` triggers
+`HeliusRegistrar.add_wallet`
+(`coordinator/app/services/helius_registrar.py`):
+
+- creates the global webhook (`transactionTypes=["SWAP"]`,
+  `accountAddresses=[wallet]`, `authHeader="Bearer $HELIUS_WEBHOOK_SECRET"`)
+- records the webhook id in the `helius_webhooks` table so coordinator
+  restarts don't re-create it
+- subsequent joins PUT the merged address list to the same webhook id
+
+The registrar is idempotent on every layer — duplicate joins, retries,
+and coordinator restarts all converge to the same webhook with the
+right address list.
+
+A Helius outage doesn't break a join: `try_register_wallet` swallows
+`HeliusError` and logs a warning so operators can re-trigger by
+having the agent rejoin once Helius is back up.
+
+## Manual mode
+
+Use this if the coordinator's account shouldn't own the webhook (shared
+team account, separate billing) or if you don't want to put a long-lived
+API key on the coordinator.
+
+### Create the webhook
+
+Two paths — pick one.
+
+**Option A — dashboard**
 
 1. [helius.dev/dashboard/webhooks](https://helius.dev/dashboard/webhooks)
    → "New Webhook".
@@ -38,7 +82,7 @@ There are two paths — pick one.
    wallets here as agents join seasons.
 7. Click create. Helius returns a `webhookID`.
 
-### Option B — API
+**Option B — API**
 
 ```bash
 curl -X POST "https://api.helius.xyz/v0/webhooks?api-key=$HELIUS_API_KEY" \
@@ -52,24 +96,20 @@ curl -X POST "https://api.helius.xyz/v0/webhooks?api-key=$HELIUS_API_KEY" \
   }'
 ```
 
-Save the returned `webhookID` somewhere accessible — you'll need it
-to add or remove account addresses.
+Save the returned `webhookID`.
 
-## Add agent wallets
+### Add agent wallets
 
-When an agent joins a season, you currently add their wallet to the
-webhook's `accountAddresses` manually. Two ways:
+When an agent joins a season, add their wallet to the webhook's
+`accountAddresses`.
 
-### Dashboard
+**Dashboard** — edit the webhook → paste new wallet pubkey → save.
 
-Edit the webhook → paste new wallet pubkey → save.
-
-### API (PUT replaces the full list)
+**API (PUT replaces the full list)**:
 
 ```bash
 WALLETS=$(curl -s "https://api.helius.xyz/v0/webhooks/$WEBHOOK_ID?api-key=$HELIUS_API_KEY" | jq -r '.accountAddresses[]')
 
-# add a new one
 NEW_LIST=$(echo -e "$WALLETS\n$NEW_WALLET" | jq -R . | jq -s .)
 
 curl -X PUT "https://api.helius.xyz/v0/webhooks/$WEBHOOK_ID?api-key=$HELIUS_API_KEY" \
@@ -84,9 +124,10 @@ curl -X PUT "https://api.helius.xyz/v0/webhooks/$WEBHOOK_ID?api-key=$HELIUS_API_
 ```
 
 The coordinator's `HeliusClient.add_addresses` does the
-read-merge-write internally; you can shortcut by writing a script
+read-merge-write internally — you can shortcut by writing a script
 that calls it on every `season_entry` insert via a Postgres trigger
-or a polling loop.
+or polling loop. (At which point you've reinvented auto mode — just
+set `HELIUS_API_KEY` and let the coordinator do it.)
 
 ## Verify it works
 
@@ -108,24 +149,11 @@ If nothing shows up:
   and `HELIUS_WEBHOOK_SECRET`. A mismatch returns 401, which Helius
   retries 3× then disables the webhook.
 - Check that the agent wallet is in the webhook's
-  `accountAddresses` — case-sensitive base58.
+  `accountAddresses` — case-sensitive base58. In auto mode, query the
+  `helius_webhooks` table for the webhook id, then GET the webhook to
+  confirm.
 - Confirm the swap is one Helius parses as `SWAP` (Jupiter, Raydium,
   Orca, Meteora, Phoenix). Direct SPL transfers don't count.
-
-## Phase 2: auto-register on join
-
-The plan is to wire `HeliusClient.add_addresses` into `join_season`
-so the coordinator manages the webhook automatically. That requires:
-
-- Long-lived `HELIUS_API_KEY` env var on the coordinator.
-- The coordinator owning the webhook (whichever account created it
-  via API). Don't share API keys across teams.
-- A startup task that ensures a webhook exists with the right URL +
-  secret, creates one if missing, stores the webhook_id in a
-  config row.
-
-Tracked in `Sprint 2.4` follow-up scope, not blocking Phase 1
-launch.
 
 ## Troubleshooting
 
@@ -153,3 +181,15 @@ exist but don't count toward `trade_count` — only `in_universe=True`
 swaps do. Either set the season's `trading_universe` to include the
 mints being swapped, or make it empty (which is treated as "no
 filter — everything counts").
+
+### Auto mode: the webhook isn't being created on the first join
+
+- Confirm `HELIUS_API_KEY` is set on the coordinator process (not
+  just in `.env` — uvicorn must have it in its environment).
+- Confirm the coordinator can reach `api.helius.xyz` outbound.
+- Look for `helius register failed for <wallet>` in the logs — the
+  registrar logs a warning instead of failing the join.
+- Inspect the `helius_webhooks` table — if a row exists with the
+  `global` label but Helius doesn't actually have that webhook id
+  (e.g. you deleted it from the dashboard), delete the row and let
+  the next join recreate it.

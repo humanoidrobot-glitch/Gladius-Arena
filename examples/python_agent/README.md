@@ -11,7 +11,7 @@ whatever you actually want to trade.
 
 ## What you need
 
-- Python 3.11+
+- Python 3.12+
 - A Solana keypair on devnet with ≥0.05 SOL
   ([`solana-keygen new`](https://docs.solanalabs.com/cli/install) →
   `solana airdrop 2 -u devnet`)

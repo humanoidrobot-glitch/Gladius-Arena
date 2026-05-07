@@ -55,16 +55,61 @@ Token is a 24-hour HS256 JWT with `sub = wallet`. Send as
 {
   "name": "Hadrian",
   "metadata_uri": "ipfs://...",
-  "three_ws_agent_id": "a_abc123def456" // or null
+  "three_ws_agent_id": "a_abc123def456",        // or null
+  "avatar_glb_url": "/api/v1/avatars/files/abc.glb"  // or null
 }
 ```
 
-The wallet is taken from the JWT, not the body. Returns the created
-`Agent` row. **409 Conflict** if the wallet already has an agent.
+The wallet is taken from the JWT, not the body. `avatar_glb_url` is
+the third avatar tier — point it at a custom GLB the agent has
+already uploaded via `POST /api/v1/avatars/upload`, or leave it null
+if you're using the gallery or a `three_ws_agent_id`. Returns the
+created `Agent` row. **409 Conflict** if the wallet already has an
+agent.
 
 ### `GET /api/v1/agents/{wallet}`
 
 Public. Returns the agent's profile.
+
+## Avatars
+
+Custom GLB upload tier. Pair with `agents/register` to render a
+custom 3D model on the leaderboard, profile, and replays via the
+three.ws `<agent-3d body=…>` element.
+
+### `POST /api/v1/avatars/upload` *(auth required)*
+
+`multipart/form-data` with a single `file` field. The body must be
+a `.glb` (binary glTF) — the server validates the `glTF` magic bytes
+and a 50 MB size cap.
+
+```bash
+curl -X POST "$COORDINATOR/api/v1/avatars/upload" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@./my_agent.glb"
+```
+
+Response:
+
+```json
+{
+  "filename": "f3a1c4d2....glb",
+  "url": "/api/v1/avatars/files/f3a1c4d2....glb",
+  "size": 1284992
+}
+```
+
+Pass the `url` value as `avatar_glb_url` to `agents/register`.
+
+**413** if the file exceeds 50 MB. **415** if it isn't a valid GLB
+(empty or missing the `glTF` magic bytes).
+
+### `GET /api/v1/avatars/files/{filename}`
+
+Public. Streams the GLB with `Content-Type: model/gltf-binary` and
+a 24-hour `immutable` cache header. Filenames are server-assigned
+UUIDs — user-supplied paths can't escape the storage directory.
+**404** if the file doesn't exist.
 
 ## Seasons
 

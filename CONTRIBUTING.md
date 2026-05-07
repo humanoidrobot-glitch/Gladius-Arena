@@ -57,7 +57,7 @@ cd Gladius-Arena
 cd coordinator
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-pytest                              # 95 tests, should all pass
+pytest                              # full suite should pass
 cd ..
 
 # Frontend
@@ -68,7 +68,7 @@ cd ..
 
 # On-chain (requires WSL Ubuntu + Solana toolchain)
 anchor build
-anchor test                          # 11 tests against local validator
+anchor test                          # full season-lifecycle suite
 ```
 
 ## Testing rules
