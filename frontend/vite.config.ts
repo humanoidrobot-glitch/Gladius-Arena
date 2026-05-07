@@ -1,9 +1,18 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "node:path";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // @solana/web3.js + wallet-adapter packages assume Node's Buffer +
+    // process globals. Polyfill them in the browser bundle.
+    nodePolyfills({
+      include: ["buffer", "process"],
+      globals: { Buffer: true, process: true },
+    }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

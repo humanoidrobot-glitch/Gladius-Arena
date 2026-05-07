@@ -7,6 +7,7 @@ import { StepShell } from "../components/registration/StepShell";
 import { SubmitStep } from "../components/registration/SubmitStep";
 import { WalletStep } from "../components/registration/WalletStep";
 import { AVATAR_GALLERY, type AvatarOption } from "../lib/avatars";
+import { useSession } from "../lib/session";
 
 export function RegisterPage() {
   const [walletPubkey, setWalletPubkey] = useState<string | null>(null);
@@ -22,10 +23,9 @@ export function RegisterPage() {
   const hasCrest = Boolean(selectedAvatar || threeWsAgentId || avatarGlbUrl);
   const allComplete = Boolean(walletPubkey) && nameComplete && hasCrest;
 
-  // Real Ed25519 challenge/sign/verify lands in Sprint 5. Until then the
-  // wallet pubkey stands in as the auth token so the upload tier can be
-  // exercised in dev — the backend will 401 and CustomUpload surfaces it.
-  const authToken = walletPubkey;
+  // Real JWT from the wallet-adapter sign-in flow. CustomUpload + the
+  // (eventual) registration POST attach this as a Bearer token.
+  const { token: authToken } = useSession();
 
   function handleSelectAvatar(option: AvatarOption) {
     setSelectedAvatar(option);
