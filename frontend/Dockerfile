@@ -6,7 +6,10 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm install (not ci) because the wallet-adapter peer-dep graph
+# resolves slightly differently on Alpine Linux than on the dev box,
+# and `npm ci`'s strict lock-equality check trips on the divergence.
+RUN npm install --no-audit --no-fund
 COPY . .
 # VITE_API_BASE / VITE_RPC_URL are baked into the bundle at build
 # time. Railway forwards build-time env vars by default, so the values
