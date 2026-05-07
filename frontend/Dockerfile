@@ -11,9 +11,16 @@ COPY frontend ./frontend
 COPY docs ./docs
 # `@root/CONTRIBUTING.md?raw` is bundled into the in-site docs page.
 COPY CONTRIBUTING.md ./
-# Bump Node heap — wallet-adapter + recharts + react-markdown together
-# push rollup's minify step over the 1.5 GB default and OOM silently.
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Vite reads import.meta.env.VITE_* at build time. Railway forwards
+# service variables to the builder as build args, so we have to
+# declare them with ARG and re-emit as ENV for the RUN step to see
+# them. Without these, the bundle ships with empty defaults and
+# fetch(`${API_BASE}/api/v1/...`) hits the frontend's own domain.
+ARG VITE_API_BASE
+ARG VITE_RPC_URL
+ENV VITE_API_BASE=$VITE_API_BASE \
+    VITE_RPC_URL=$VITE_RPC_URL \
+    NODE_OPTIONS="--max-old-space-size=4096"
 RUN cd frontend && npm run build
 
 FROM node:20-alpine
