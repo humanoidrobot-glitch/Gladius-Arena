@@ -21,7 +21,7 @@ wallet auto-registration happens, and you fall back to manual mode.
 
 1. A Helius account at [helius.dev](https://helius.dev).
 2. An API key from
-   [helius.dev/dashboard/api-keys](https://helius.dev/dashboard/api-keys).
+   [dashboard.helius.dev](https://dashboard.helius.dev) → API Keys.
 3. The coordinator deployed to a public HTTPS URL (Helius won't
    POST to localhost — for local testing use ngrok / cloudflared
    tunnel).
@@ -70,7 +70,7 @@ Two paths — pick one.
 
 **Option A — dashboard**
 
-1. [helius.dev/dashboard/webhooks](https://helius.dev/dashboard/webhooks)
+1. [dashboard.helius.dev](https://dashboard.helius.dev) → Webhooks
    → "New Webhook".
 2. **Webhook URL**: `https://your-coordinator.example/api/v1/webhooks/helius`
 3. **Webhook Type**: `Enhanced Transactions`

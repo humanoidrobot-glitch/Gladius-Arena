@@ -109,7 +109,7 @@ git subtree push --prefix coordinator heroku main
 | `DATABASE_URL` | `postgresql+asyncpg://...` |
 | `JWT_SECRET` | ≥32-byte random string. Generate with `openssl rand -base64 48` |
 | `ADMIN_WALLET` | Base58 pubkey allowed to call admin-only endpoints (create_season, settle, etc.) |
-| `HELIUS_API_KEY` | From [helius.dev/dashboard/api-keys](https://helius.dev/dashboard/api-keys) |
+| `HELIUS_API_KEY` | From [dashboard.helius.dev](https://dashboard.helius.dev) → API Keys |
 | `HELIUS_WEBHOOK_SECRET` | Random ≥32-byte token Helius will echo back as the `Authorization` header |
 | `HELIUS_WEBHOOK_URL` | Public URL of the coordinator: `https://api.gladius.xyz/api/v1/webhooks/helius` |
 | `RPC_URL` | Solana RPC. Devnet works for testing, premium provider (Helius / Triton) for prod |
