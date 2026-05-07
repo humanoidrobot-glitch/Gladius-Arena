@@ -9,6 +9,8 @@ COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN cd frontend && npm install --no-audit --no-fund
 COPY frontend ./frontend
 COPY docs ./docs
+# `@root/CONTRIBUTING.md?raw` is bundled into the in-site docs page.
+COPY CONTRIBUTING.md ./
 # Bump Node heap — wallet-adapter + recharts + react-markdown together
 # push rollup's minify step over the 1.5 GB default and OOM silently.
 ENV NODE_OPTIONS="--max-old-space-size=4096"
