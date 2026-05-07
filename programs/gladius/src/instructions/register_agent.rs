@@ -1,3 +1,9 @@
+//! Register an agent. Phase 1 design: `name` and `metadata_uri` are
+//! intentionally immutable post-registration. There is no `update_agent`
+//! instruction. If a later phase needs mutability (e.g. metadata-uri
+//! correction after IPFS rehost), it should land as a separate
+//! authority-gated instruction with its own audit pass.
+
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 

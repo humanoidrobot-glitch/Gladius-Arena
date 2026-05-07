@@ -20,10 +20,16 @@ pub fn handler(ctx: Context<JoinSeason>) -> Result<()> {
     );
 
     let clock = Clock::get()?;
+    require!(
+        clock.unix_timestamp < season.end_time,
+        GladiusError::SeasonExpired,
+    );
+
     entry.agent = agent.key();
     entry.season = season.key();
     entry.wallet = agent.authority;
     entry.score = None;
+    entry.attestation = None;
     entry.joined_at = clock.unix_timestamp;
     entry.bump = ctx.bumps.entry;
 

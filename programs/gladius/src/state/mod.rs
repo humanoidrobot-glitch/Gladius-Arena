@@ -14,6 +14,13 @@ pub const SEASON_NAME_MAX_LEN: usize = 64;
 pub const SEASON_DESCRIPTION_MAX_LEN: usize = 256;
 pub const TRADING_UNIVERSE_MAX_LEN: usize = 20;
 
+/// Minimum on-chain duration between `created_at` and `end_time`.
+/// Prevents the operational footgun of an admin creating a season that
+/// ends seconds after creation. 5 minutes is short enough for dev/test
+/// workflows and long enough to make accidental near-zero windows
+/// hard to land.
+pub const MIN_SEASON_DURATION_SECONDS: i64 = 5 * 60;
+
 pub mod agent;
 pub mod gladius_config;
 pub mod season;

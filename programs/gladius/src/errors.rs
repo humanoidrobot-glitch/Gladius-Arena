@@ -34,4 +34,10 @@ pub enum GladiusError {
     ScoreAlreadySubmitted,
     #[msg("No final score has been submitted for this entry")]
     ScoreNotSubmitted,
+    #[msg("An attestation has already been minted for this entry")]
+    AttestationAlreadyMinted,
+    #[msg("Season end_time has passed — no more entries accepted")]
+    SeasonExpired,
+    #[msg("Season duration is below the minimum allowed window")]
+    SeasonTooShort,
 }

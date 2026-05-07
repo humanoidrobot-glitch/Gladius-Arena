@@ -1,18 +1,26 @@
 //! Mint a Metaplex Core attestation asset for a settled SeasonEntry.
 //!
-//! The asset is non-transferable from day one (FreezeDelegate plugin
-//! frozen=true) so the credential can't be sold, gifted, or laundered —
-//! it represents this specific agent's recorded performance, full stop.
+//! The asset is permanently non-transferable AND non-burnable: a
+//! `PermanentFreezeDelegate { frozen: true }` plugin with
+//! `PluginAuthority::None` is added at mint time. The "Permanent" prefix
+//! means the plugin can't be removed; `authority: None` means even the
+//! Gladius update authority can't toggle `frozen=false`. mpl-core's
+//! freeze plugin gates both Transfer and Burn lifecycle events, so the
+//! credential is locked to the agent owner forever.
 //!
-//! Update authority is `gladius_config` (a PDA), so future plugin or
-//! metadata corrections — e.g. metadata-uri pointing at a renderer that
-//! gets re-hosted — can be performed by the Gladius authority without
-//! touching the agent owner's signing keys.
+//! Update authority is `gladius_config` so future metadata-URI corrections
+//! (e.g. card renderer rehosted) remain possible without touching the
+//! agent's signing keys, but plugin state is sealed.
+//!
+//! Exactly one attestation per `SeasonEntry`: the asset pubkey is recorded
+//! on the entry, and re-mint is blocked.
 
 use anchor_lang::prelude::*;
 use mpl_core::{
     instructions::CreateV2CpiBuilder,
-    types::{DataState, FreezeDelegate, Plugin, PluginAuthority, PluginAuthorityPair},
+    types::{
+        DataState, PermanentFreezeDelegate, Plugin, PluginAuthority, PluginAuthorityPair,
+    },
     ID as MPL_CORE_ID,
 };
 
@@ -23,19 +31,20 @@ use crate::state::{
 };
 
 pub fn handler(ctx: Context<MintAttestation>, metadata_uri: String) -> Result<()> {
-    let _score = ctx
-        .accounts
-        .entry
-        .score
-        .ok_or(GladiusError::ScoreNotSubmitted)?;
+    let entry = &mut ctx.accounts.entry;
+    require!(entry.score.is_some(), GladiusError::ScoreNotSubmitted);
+    require!(
+        entry.attestation.is_none(),
+        GladiusError::AttestationAlreadyMinted,
+    );
 
     let season_id = ctx.accounts.season.season_id;
     let agent_name = ctx.accounts.agent.name.clone();
     let asset_name = format!("Gladius S{} — {}", season_id, agent_name);
 
     let plugins = vec![PluginAuthorityPair {
-        plugin: Plugin::FreezeDelegate(FreezeDelegate { frozen: true }),
-        authority: Some(PluginAuthority::UpdateAuthority),
+        plugin: Plugin::PermanentFreezeDelegate(PermanentFreezeDelegate { frozen: true }),
+        authority: Some(PluginAuthority::None),
     }];
 
     let config_bump = ctx.accounts.gladius_config.bump;
@@ -56,6 +65,8 @@ pub fn handler(ctx: Context<MintAttestation>, metadata_uri: String) -> Result<()
         .uri(metadata_uri)
         .plugins(plugins)
         .invoke_signed(signer_seeds)?;
+
+    entry.attestation = Some(ctx.accounts.asset.key());
 
     emit!(AttestationMinted {
         season_id,
@@ -97,6 +108,7 @@ pub struct MintAttestation<'info> {
     pub agent: Account<'info, Agent>,
 
     #[account(
+        mut,
         seeds = [
             SEASON_ENTRY_SEED,
             season.season_id.to_le_bytes().as_ref(),
@@ -109,6 +121,7 @@ pub struct MintAttestation<'info> {
     pub entry: Account<'info, SeasonEntry>,
 
     /// CHECK: a fresh keypair signing into a new Core asset account.
+    /// Bound to the entry post-CPI via `entry.attestation`.
     #[account(mut, signer)]
     pub asset: UncheckedAccount<'info>,
 

@@ -184,6 +184,33 @@ describe("gladius — full season lifecycle", () => {
     ).to.be.rejectedWith(/Unauthorized|ConstraintHasOne/i);
   });
 
+  it("create_season: rejects end_time below MIN_SEASON_DURATION", async () => {
+    const tooSoon = new BN(Math.floor(Date.now() / 1000) + 30);
+    const config = {
+      name: "Too Short",
+      description: "",
+      tradingUniverse: [],
+      maxAgents: 1,
+      scoringMethod: { pnl: {} },
+    };
+    const [shortSeasonPda] = PublicKey.findProgramAddressSync(
+      [SEASON_SEED, seasonIdSeed(new BN(1))],
+      program.programId,
+    );
+
+    await expect(
+      program.methods
+        .createSeason(config, tooSoon)
+        .accountsStrict({
+          authority: admin.publicKey,
+          gladiusConfig: configPda,
+          season: shortSeasonPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .rpc(),
+    ).to.be.rejectedWith(/SeasonTooShort/i);
+  });
+
   it("join_season: agent joins a Pending season", async () => {
     await program.methods
       .joinSeason()
@@ -202,6 +229,7 @@ describe("gladius — full season lifecycle", () => {
     expect(entry.season.toBase58()).to.equal(seasonPda.toBase58());
     expect(entry.wallet.toBase58()).to.equal(agentOwner.publicKey.toBase58());
     expect(entry.score).to.be.null;
+    expect(entry.attestation).to.be.null;
 
     const season = await program.account.season.fetch(seasonPda);
     expect(season.agentCount).to.equal(1);
@@ -330,5 +358,61 @@ describe("gladius — full season lifecycle", () => {
     const info = await connection.getAccountInfo(asset.publicKey);
     expect(info, "asset account").to.not.equal(null);
     expect(info!.owner.toBase58()).to.equal(MPL_CORE.toBase58());
+
+    // Entry now binds the attestation pubkey for indexer resolution.
+    const entry = await program.account.seasonEntry.fetch(entryPda);
+    expect(entry.attestation).to.not.equal(null);
+    expect(entry.attestation!.toBase58()).to.equal(asset.publicKey.toBase58());
+  });
+
+  it("mint_attestation: re-mint fails (AttestationAlreadyMinted)", async () => {
+    const MPL_CORE = new PublicKey("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");
+    const secondAsset = Keypair.generate();
+    await expect(
+      program.methods
+        .mintAttestation("ipfs://gladius/season-1/duplicate.json")
+        .accountsStrict({
+          authority: admin.publicKey,
+          gladiusConfig: configPda,
+          season: seasonPda,
+          agent: agentPda,
+          entry: entryPda,
+          asset: secondAsset.publicKey,
+          agentOwner: agentOwner.publicKey,
+          mplCoreProgram: MPL_CORE,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([secondAsset])
+        .rpc(),
+    ).to.be.rejectedWith(/AttestationAlreadyMinted/i);
+  });
+
+  it("set_authority: current authority can rotate to a new pubkey", async () => {
+    const newAuthority = Keypair.generate();
+
+    await program.methods
+      .setAuthority(newAuthority.publicKey)
+      .accountsStrict({
+        authority: admin.publicKey,
+        config: configPda,
+      })
+      .rpc();
+
+    const config = await program.account.gladiusConfig.fetch(configPda);
+    expect(config.authority.toBase58()).to.equal(newAuthority.publicKey.toBase58());
+  });
+
+  it("set_authority: old authority is now locked out", async () => {
+    const someoneElse = Keypair.generate();
+
+    await expect(
+      program.methods
+        .setAuthority(someoneElse.publicKey)
+        .accountsStrict({
+          authority: admin.publicKey,
+          config: configPda,
+        })
+        .rpc(),
+    ).to.be.rejectedWith(/Unauthorized|ConstraintHasOne/i);
   });
 });

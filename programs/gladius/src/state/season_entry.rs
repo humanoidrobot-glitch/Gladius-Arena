@@ -9,6 +9,10 @@ pub struct SeasonEntry {
     /// `score.is_some()` is the canonical "settled" predicate — there is no
     /// separate `settled` flag.
     pub score: Option<FinalScore>,
+    /// Mint pubkey of the attestation asset, once minted. Bound here so
+    /// indexers can resolve "the attestation for this entry" deterministically
+    /// and `mint_attestation` enforces one-per-entry.
+    pub attestation: Option<Pubkey>,
     pub joined_at: i64,
     pub bump: u8,
 }

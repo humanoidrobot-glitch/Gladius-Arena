@@ -2,8 +2,9 @@ use anchor_lang::prelude::*;
 
 use crate::errors::GladiusError;
 use crate::state::{
-    GladiusConfig, Season, SeasonConfig, SeasonStatus, GLADIUS_CONFIG_SEED, SEASON_NAME_MAX_LEN,
-    SEASON_SEED, SEASON_DESCRIPTION_MAX_LEN, TRADING_UNIVERSE_MAX_LEN,
+    GladiusConfig, Season, SeasonConfig, SeasonStatus, GLADIUS_CONFIG_SEED,
+    MIN_SEASON_DURATION_SECONDS, SEASON_DESCRIPTION_MAX_LEN, SEASON_NAME_MAX_LEN, SEASON_SEED,
+    TRADING_UNIVERSE_MAX_LEN,
 };
 
 pub fn handler(
@@ -26,7 +27,14 @@ pub fn handler(
     require!(config.max_agents > 0, GladiusError::InvalidSeasonConfig);
 
     let clock = Clock::get()?;
-    require!(end_time > clock.unix_timestamp, GladiusError::InvalidEndTime);
+    require!(
+        end_time
+            >= clock
+                .unix_timestamp
+                .checked_add(MIN_SEASON_DURATION_SECONDS)
+                .ok_or(GladiusError::Overflow)?,
+        GladiusError::SeasonTooShort,
+    );
 
     let admin_config = &mut ctx.accounts.gladius_config;
     let season = &mut ctx.accounts.season;

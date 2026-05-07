@@ -63,4 +63,11 @@ pub mod gladius {
     ) -> Result<()> {
         instructions::mint_attestation::handler(ctx, metadata_uri)
     }
+
+    pub fn set_authority(
+        ctx: Context<SetAuthority>,
+        new_authority: Pubkey,
+    ) -> Result<()> {
+        instructions::set_authority::handler(ctx, new_authority)
+    }
 }
