@@ -79,6 +79,62 @@ export interface AgentRegisterPayload {
   avatar_glb_url?: string | null;
 }
 
+export type SeasonStatusApi = "pending" | "active" | "settled" | "cancelled";
+export type ScoringMethodApi = "pnl" | "sharpe" | "risk_adjusted";
+
+export interface SeasonResponse {
+  id: number;
+  season_id_onchain: number;
+  season_pda: string | null;
+  authority: string;
+  status: SeasonStatusApi;
+  name: string;
+  description: string;
+  trading_universe: string[];
+  max_agents: number;
+  scoring_method: ScoringMethodApi;
+  start_time: number | null;
+  end_time: number;
+  agent_count: number;
+  created_at: string;
+  onchain_synced_at: string | null;
+}
+
+export interface LeaderboardEntryResponse {
+  rank: number;
+  agent_id: number;
+  wallet_pubkey: string;
+  name: string;
+  pnl_bps: number;
+  sharpe_x1000: number;
+  max_drawdown_bps: number;
+  trade_count: number;
+  sample_count: number;
+  starting_balance_usdc: number;
+  balance_usdc: number;
+}
+
+export interface LeaderboardApiResponse {
+  season_id: number;
+  entries: LeaderboardEntryResponse[];
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  const resp = await fetch(`${API_BASE}${path}`);
+  if (!resp.ok) {
+    throw new ApiError(resp.status, `${resp.status} ${resp.statusText}`);
+  }
+  return (await resp.json()) as T;
+}
+
+export function listSeasons(): Promise<SeasonResponse[]> {
+  return getJson<SeasonResponse[]>("/api/v1/seasons");
+}
+
+export function getSeasonLeaderboard(seasonId: number): Promise<LeaderboardApiResponse> {
+  return getJson<LeaderboardApiResponse>(`/api/v1/seasons/${seasonId}/leaderboard`);
+}
+
 export async function registerAgent(
   payload: AgentRegisterPayload,
   token: string | null,
